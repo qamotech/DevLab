@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>URL Encoder / Decoder</title>
+<style>
+:root{--bg:#0b1018;--panel:#111925;--field:#0c131e;--border:#253246;--text:#e5edf8;--muted:#91a2ba;--accent:#69e0c0;--danger:#ffa5ac;--radius:14px}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 85% 0%,#14293a 0%,transparent 45%),var(--bg);color:var(--text);font:14px/1.6 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+button,select,textarea{font:inherit}
+button,select{cursor:pointer}
+button{border:1px solid var(--border);background:#192537;color:var(--text);border-radius:8px;padding:9px 14px;transition:background .15s,border-color .15s}
+button:hover{background:#24344a;border-color:#4b6380}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--accent);color:#08291f;border-color:var(--accent);font-weight:700}
+button.primary:hover{background:#8eead2}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+main{max-width:1160px;padding:44px 24px 30px;margin:auto}
+header{display:flex;align-items:center;gap:15px;margin-bottom:30px}
+.logo{display:grid;place-items:center;width:49px;height:49px;border:1px solid #325d58;border-radius:13px;background:#13312f;color:var(--accent);font:700 23px ui-monospace,monospace;flex-shrink:0}
+h1{margin:0;font-size:clamp(23px,4vw,32px);letter-spacing:-1px;line-height:1.3}
+.subtitle{margin:5px 0 0;color:var(--muted)}
+.tag{margin-left:auto;font:11px ui-monospace,monospace;color:var(--accent);border:1px solid #31524e;padding:5px 9px;border-radius:99px;white-space:nowrap}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--border)}
+.mode-label{color:var(--muted);font-size:12px;font-weight:600}
+select{background:var(--field);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;max-width:100%}
+.auto{margin-left:auto;display:flex;align-items:center;gap:7px;color:var(--muted);white-space:nowrap}
+input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.hint{padding:12px 20px;margin:0;color:var(--muted);font-size:12px;border-bottom:1px solid var(--border)}
+.editors{display:grid;grid-template-columns:1fr 1fr}
+.editor{padding:18px 20px;min-width:0}
+.editor+.editor{border-left:1px solid var(--border)}
+.editor-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px}
+.label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--muted)}
+.count{color:var(--muted);font:11px ui-monospace,monospace}
+textarea{display:block;width:100%;height:255px;resize:vertical;border:1px solid var(--border);border-radius:9px;background:var(--field);color:var(--text);padding:14px;font:13px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere;tab-size:2}
+textarea::placeholder{color:#61718b}
+textarea[readonly]{color:#a6efd9}
+.editor-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.editor-actions button{font-size:12px;padding:7px 11px}
+.status{min-height:47px;padding:12px 20px;border-top:1px solid var(--border);color:var(--muted);font:12px/1.7 ui-monospace,monospace;overflow-wrap:anywhere}
+.status.error{color:var(--danger);background:#351b242e}
+.status.success{color:var(--accent)}
+.section-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:27px 0 12px}
+h2{font-size:15px;margin:0;letter-spacing:-.2px}
+.source{color:var(--muted);font-size:11px;text-align:right}
+.breakdown-body{padding:18px 20px}
+.empty{color:var(--muted);padding:17px 0;margin:0;font-size:13px}
+.components{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.component{border:1px solid var(--border);background:var(--field);padding:12px;border-radius:8px;min-width:0}
+.component.wide{grid-column:1/-1}
+.component dt{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px}
+.component dd{margin:0;font:12px/1.7 ui-monospace,monospace;overflow-wrap:anywhere;white-space:pre-wrap}
+dl{margin:0}
+.table-wrap{overflow:auto;border:1px solid var(--border);border-radius:9px}
+table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;min-width:440px}
+th{text-align:left;background:#192333;color:var(--muted);font-size:10px;letter-spacing:1px;text-transform:uppercase}
+th,td{padding:11px 13px;border-bottom:1px solid var(--border);vertical-align:top}
+td{font-family:ui-monospace,monospace;overflow-wrap:anywhere;white-space:pre-wrap}
+tr:last-child td{border-bottom:0}
+th:first-child,td:first-child{width:45px;color:var(--muted)}
+h3{font-size:12px;font-weight:600;margin:21px 0 9px;color:var(--muted)}
+.note{font-size:12px;color:var(--muted);margin:10px 0 0}
+.warning{color:var(--danger)}
+details{margin-top:20px;padding:15px 18px;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:12px}
+summary{cursor:pointer;color:var(--text)}
+details ul{padding-left:19px;margin-bottom:0}
+code{font-family:ui-monospace,monospace;color:#b6d3ef}
+footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#71829a;font-size:11px;margin-top:22px}
+@media(max-width:700px){main{padding:25px 14px}.tag{display:none}.editors{grid-template-columns:1fr}.editor+.editor{border-left:0;border-top:1px solid var(--border)}textarea{height:190px}.toolbar{padding:14px}.auto{margin-left:0}.editor,.breakdown-body{padding:15px}.components{grid-template-columns:1fr}.component.wide{grid-column:auto}.source{max-width:150px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="logo" aria-hidden="true">%</div>
+<div><h1>URL Encoder / Decoder</h1><p class="subtitle">Transform URLs. Inspect every component.</p></div>
+<span class="tag">LOCAL / CLIENT-SIDE</span>
+</header>
+
+<section class="panel" aria-label="URL transformation">
+<div class="toolbar">
+<label class="mode-label" for="mode">ENCODING MODE</label>
+<select id="mode">
+<option value="component">URL component · encodeURIComponent</option>
+<option value="uri">Full URL · encodeURI</option>
+<option value="form">Form component · space as +</option>
+</select>
+<label class="auto"><input type="checkbox" id="live" checked> Live conversion</label>
+</div>
+<p class="hint" id="modeHint"></p>
+<div class="editors">
+<div class="editor">
+<div class="editor-head"><label for="input" class="label">INPUT</label><span class="count" id="inputCount">0 chars</span></div>
+<textarea id="input" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="modeHint" placeholder="Paste a URL, query string, or text here…"></textarea>
+<div class="editor-actions">
+<button class="primary" id="encode">Encode</button>
+<button id="decode">Decode</button>
+<button id="sample">Load example</button>
+<button id="clear">Clear</button>
+</div>
+</div>
+<div class="editor">
+<div class="editor-head"><label for="output" class="label">OUTPUT</label><span class="count" id="outputCount">0 chars</span></div>
+<textarea id="output" spellcheck="false" readonly placeholder="Your result appears here…"></textarea>
+<div class="editor-actions">
+<button id="copy" disabled>Copy output</button>
+<button id="swap" disabled>Use output as input ↩</button>
+</div>
+</div>
+</div>
+<div id="status" class="status" role="status" aria-live="polite">Ready. Choose Encode or Decode to set the live operation.</div>
+</section>
+
+<div class="section-heading">
+<h2>Component breakdown</h2>
+<span class="source" id="breakdownSource">Inspecting input</span>
+</div>
+<section class="panel" aria-label="Parsed URL and query parameters">
+<div class="breakdown-body">
+<p id="parseNote" class="empty">Enter a URL or query string to inspect its structure.</p>
+<dl id="components" class="components" hidden></dl>
+<div id="querySection" hidden>
+<h3 id="queryHeading">Query parameters</h3>
+<div class="table-wrap">
+<table>
+<thead><tr><th scope="col">#</th><th scope="col">Decoded key</th><th scope="col">Decoded value</th></tr></thead>
+<tbody id="queryRows"></tbody>
+</table>
+</div>
+<p class="note" id="queryNote"></p>
+</div>
+</div>
+</section>
+
+<details>
+<summary>Encoding modes & shortcuts</summary>
+<ul>
+<li><code>URL component</code> escapes URL separators such as <code>:</code>, <code>/</code>, <code>?</code>, <code>&</code>, and <code>=</code>. Use it for a single parameter key or value.</li>
+<li><code>Full URL</code> preserves URL delimiters. Its decoder also preserves escapes for reserved delimiters; use component mode to decode those.</li>
+<li><code>Form component</code> uses <code>+</code> for spaces and <code>%2B</code> for literal plus signs. It transforms a single value, not an entire key/value query string.</li>
+<li>Query inspection splits on <code>&</code> and the first <code>=</code>, decodes each part, and treats <code>+</code> as a space. Duplicate keys and empty values remain separate.</li>
+<li>Decoding is one pass. Invalid percent escapes or invalid UTF-8 produce an error rather than silently changing the text.</li>
+<li><code>Ctrl/⌘ + Enter</code> encodes; <code>Ctrl/⌘ + Shift + Enter</code> decodes.</li>
+</ul>
+</details>
+<footer><span>No uploads. No tracking. No external dependencies.</span><span>Text stays in this tab.</span></footer>
+</main>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const input=$("input"),output=$("output"),mode=$("mode");
+let operation=null,timer=null,version=0;
+const hints={
+component:"Encode or decode one URL component. Spaces become %20; URL separators are escaped.",
+uri:"Encode or decode a complete URL while preserving its structural delimiters.",
+form:"Encode or decode one form/query value. Spaces become +; literal plus signs become %2B."
+};
+function setStatus(text,type=""){$("status").textContent=text;$("status").className="status"+(type?" "+type:"");}
+function updateCounts(){
+$("inputCount").textContent=input.value.length.toLocaleString()+" chars";
+$("outputCount").textContent=output.value.length.toLocaleString()+" chars";
+$("copy").disabled=!output.value;
+$("swap").disabled=!output.value;
+}
+function transform(text,action){
+if(action==="decode"){
+if(mode.value==="uri")return decodeURI(text);
+return decodeURIComponent(mode.value==="form"?text.replace(/\+/g," "):text);
+}
+if(mode.value==="uri")return encodeURI(text);
+if(mode.value==="form")return encodeURIComponent(text).replace(/[!'()~]/g,c=>"%"+c.charCodeAt(0).toString(16).toUpperCase()).replace(/%20/g,"+");
+return encodeURIComponent(text);
+}
+function run(action){
+clearTimeout(timer);
+operation=action;
+version++;
+$("encode").classList.toggle("primary",action==="encode");
+$("decode").classList.toggle("primary",action==="decode");
+try{
+output.value=transform(input.value,action);
+setStatus(input.value?(action==="encode"?"Encoded":"Decoded")+" successfully · "+mode.options[mode.selectedIndex].text:"Ready. Live operation: "+action+".",input.value?"success":"");
+updateCounts();
+inspect(action==="decode"?output.value:input.value,action==="decode"?"decoded output":"input");
+}catch(error){
+output.value="";
+updateCounts();
+setStatus(action==="decode"?"Unable to decode: malformed percent escape or invalid UTF-8. Check for incomplete %XX sequences and the selected mode.":"Unable to encode: input contains an unpaired Unicode surrogate.","error");
+inspect(input.value,"input");
+}
+}
+function addComponent(label,value,wide=false){
+if(value===""||value==null)return;
+const box=document.createElement("div");box.className="component"+(wide?" wide":"");
+const dt=document.createElement("dt"),dd=document.createElement("dd");
+dt.textContent=label;dd.textContent=value;box.append(dt,dd);$("components").append(box);
+}
+function decodeQueryPart(value){
+try{return {text:decodeURIComponent(value.replace(/\+/g," ")),bad:false};}
+catch{return {text:value,bad:true};}
+}
+function inspect(text,source){
+$("breakdownSource").textContent="Inspecting "+source;
+const components=$("components"),rows=$("queryRows"),note=$("parseNote");
+components.replaceChildren();rows.replaceChildren();components.hidden=true;$("querySection").hidden=true;
+note.hidden=false;note.className="empty";
+const value=text.trim();
+if(!value){note.textContent="Enter a URL or query string to inspect its structure.";return;}
+let query=null,parsed=null,kind="",relative=false;
+try{
+if(/^[a-z][a-z0-9+.-]*:/i.test(value)){
+parsed=new URL(value);kind="Absolute URL";
+}else if(value.startsWith("//")){
+parsed=new URL(value,"https://relative.invalid");kind="Protocol-relative URL";relative=true;
+}else if(value.startsWith("?")||(!value.startsWith("/")&&!value.includes("?")&&(value.includes("=")||value.includes("&")))){
+const hash=value.indexOf("#");
+const beforeHash=hash<0?value:value.slice(0,hash);
+query=beforeHash.replace(/^\?/,"");kind="Query string";
+if(hash>=0)addComponent("Fragment",value.slice(hash+1),true);
+}else if(value.startsWith("/")||value.startsWith("./")||value.startsWith("../")||value.includes("?")){
+parsed=new URL(value,"https://relative.invalid");kind="Relative URL";relative=true;
+}
+}catch{
+note.textContent="This looks like a URL, but its structure is invalid. Encoding and decoding still work independently.";
+note.className="empty warning";return;
+}
+if(parsed){
+if(!relative)addComponent("Scheme",parsed.protocol);
+if(!relative||value.startsWith("//")){
+addComponent("Hostname",parsed.hostname);
+addComponent("Port",parsed.port||((parsed.protocol==="https:"||relative)?"443 (default)":parsed.protocol==="http:"?"80 (default)":""));
+addComponent("Username",parsed.username);
+addComponent("Password",parsed.password?"- - - - - - - - (present)":"");
+}
+addComponent("Path",parsed.pathname,true);
+addComponent("Query",parsed.search,true);
+addComponent("Fragment",parsed.hash,true);
+const qIndex=value.indexOf("?"),hashIndex=value.indexOf("#");
+if(qIndex>=0&&(hashIndex<0||qIndex<hashIndex))query=value.slice(qIndex+1,hashIndex<0?undefined:hashIndex);
+}
+if(!kind){note.textContent="Plain text or an encoded value. Decode an encoded URL to inspect it, or enter an absolute URL, relative path, or query string.";return;}
+components.hidden=components.children.length===0;
+note.textContent=kind+(relative?" · resolved for inspection only; no base hostname is assumed.":" · components are displayed in their URL-serialized form.");
+if(query!==null){
+$("querySection").hidden=false;
+let errors=0;
+const pairs=query===""?[]:query.split("&").filter(pair=>pair!=="");
+pairs.forEach((pair,index)=>{
+const eq=pair.indexOf("=");
+const key=decodeQueryPart(eq<0?pair:pair.slice(0,eq));
+const val=decodeQueryPart(eq<0?"":pair.slice(eq+1));
+errors+=Number(key.bad)+Number(val.bad);
+const tr=document.createElement("tr");
+[String(index+1),key.text,val.text].forEach((text,i)=>{
+const td=document.createElement("td");td.textContent=text;
+if((i===1&&key.bad)||(i===2&&val.bad)){td.className="warning";td.title="Invalid encoding; original text preserved.";}
+tr.append(td);
+});rows.append(tr);
+});
+$("queryHeading").textContent="Query parameters · "+pairs.length;
+$("queryNote").textContent=errors?errors+" malformed field(s) shown unchanged. Plus signs decode as spaces in valid fields.":pairs.length?"Order and duplicate keys preserved. Plus signs decode as spaces; empty values are shown blank.":"No query parameters.";
+$("queryNote").className="note"+(errors?" warning":"");
+}
+}
+$("encode").addEventListener("click",()=>run("encode"));
+$("decode").addEventListener("click",()=>run("decode"));
+input.addEventListener("input",()=>{
+version++;clearTimeout(timer);
+if($("live").checked&&operation){timer=setTimeout(()=>run(operation),140);}
+else{output.value="";updateCounts();inspect(input.value,"input");setStatus("Input changed. Choose Encode or Decode to generate output.");}
+});
+mode.addEventListener("change",()=>{
+$("modeHint").textContent=hints[mode.value];
+if(operation)run(operation);
+});
+$("live").addEventListener("change",()=>{if($("live").checked&&operation)run(operation);});
+$("sample").addEventListener("click",()=>{
+input.value="https://example.com/search?q=hello%20world&language=JavaScript&tag=web&tag=tools&redirect=%2Fdashboard%3Ftab%3D1#results";
+run("decode");input.focus();
+});
+$("clear").addEventListener("click",()=>{
+clearTimeout(timer);version++;input.value="";output.value="";
+updateCounts();inspect("","input");setStatus("Cleared. Ready for your next URL.");input.focus();
+});
+$("swap").addEventListener("click",()=>{
+clearTimeout(timer);version++;input.value=output.value;output.value="";
+updateCounts();inspect(input.value,"input");setStatus("Output moved to input. Choose an operation to continue.");input.focus();
+});
+$("copy").addEventListener("click",async()=>{
+const text=output.value,current=version;
+let success=false;
+try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);success=true;}}catch{}
+if(!success){
+output.focus();output.select();
+try{success=document.execCommand("copy");}catch{}
+}
+if(current===version)setStatus(success?"Output copied to clipboard.":"Clipboard unavailable. Select the output and copy it manually.",success?"success":"error");
+});
+document.addEventListener("keydown",event=>{
+if((event.ctrlKey||event.metaKey)&&event.key==="Enter"){
+event.preventDefault();run(event.shiftKey?"decode":"encode");
+}
+});
+$("modeHint").textContent=hints[mode.value];
+updateCounts();
+</script>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+</body>
+</html>

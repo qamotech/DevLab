@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>HTTP Status Code Lookup</title>
+<style>
+:root{--bg:#0b0e14;--panel:#121722;--line:#232c3d;--text:#e8edf5;--muted:#8b96ab;--accent:#60a5fa;color:var(--text);background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0}
+header{max-width:1000px;margin:auto;padding:26px 24px 18px}
+h1{font-size:22px;margin:0;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:13px;margin:6px 0 0}
+main{max-width:1000px;margin:auto;padding:0 24px 40px}
+.searchbar{display:flex;gap:10px;margin-bottom:14px}
+.searchbar input{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:13px 16px;font-size:15px}
+.searchbar input:focus{outline:none;border-color:var(--accent)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.chip{background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#0b0e14}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:10px;display:flex;gap:16px;align-items:flex-start}
+.code{font:700 20px ui-monospace,Consolas,monospace;min-width:64px;padding-top:2px}
+.code.c1{color:#6ce5bc}.code.c2{color:#60a5fa}.code.c3{color:#fbbf24}.code.c4{color:#f87171}.code.c5{color:#c084fc}
+.body h3{margin:0 0 6px;font-size:15px}
+.body p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.6}
+.tag{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:2px 8px;margin-left:8px;white-space:nowrap}
+.empty{color:var(--muted);text-align:center;padding:40px;font-size:14px}
+.count{color:var(--muted);font-size:12px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<header><h1>HTTP Status Code Lookup</h1><p class="sub">Search every status code with plain-English meanings.</p></header>
+<main>
+<div class="searchbar"><input id="q" type="text" placeholder="Search by code or keyword — try &quot;404&quot; or &quot;timeout&quot;" autocomplete="off"></div>
+<div class="chips" id="chips">
+<button class="chip on" data-cat="all">All</button>
+<button class="chip" data-cat="1">1xx Informational</button>
+<button class="chip" data-cat="2">2xx Success</button>
+<button class="chip" data-cat="3">3xx Redirection</button>
+<button class="chip" data-cat="4">4xx Client Error</button>
+<button class="chip" data-cat="5">5xx Server Error</button>
+</div>
+<div class="count" id="count"></div>
+<div id="list"></div>
+</main>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+<script>
+(function(){
+"use strict";
+const CODES=[
+[100,"Continue","The server received the request headers; the client should send the body."],
+[101,"Switching Protocols","The server agrees to switch protocols (e.g. to WebSocket)."],
+[103,"Early Hints","Preliminary headers sent while the final response is prepared."],
+[200,"OK","The request succeeded. The response depends on the method used."],
+[201,"Created","A new resource was created as a result of the request."],
+[202,"Accepted","Accepted for processing, but processing isn't complete."],
+[203,"Non-Authoritative Information","Returned metadata comes from a third party, not the origin server."],
+[204,"No Content","Success, but intentionally no body in the response."],
+[205,"Reset Content","Success; the client should reset the document view."],
+[206,"Partial Content","The server is delivering part of the resource (range requests)."],
+[207,"Multi-Status","Multiple status codes for multiple sub-requests (WebDAV)."],
+[208,"Already Reported","Members of a DAV binding were already enumerated."],
+[226,"IM Used","Response is a delta from a previous instance (instance manipulation)."],
+[300,"Multiple Choices","Several representations available; the client picks one."],
+[301,"Moved Permanently","The resource now lives at a new URL forever — update bookmarks."],
+[302,"Found","Temporary redirect to a different URL."],
+[303,"See Other","Redirect to another URL using GET (common after form POST)."],
+[304,"Not Modified","Cached version is still fresh — no need to re-download."],
+[305,"Use Proxy","Must be accessed through the given proxy (deprecated)."],
+[307,"Temporary Redirect","Redirect, but the method must not change (unlike 302)."],
+[308,"Permanent Redirect","Like 301, but the method must not change."],
+[400,"Bad Request","The server can't understand the request (malformed syntax)."],
+[401,"Unauthorized","Authentication is required or failed."],
+[402,"Payment Required","Reserved for future use (payment systems)."],
+[403,"Forbidden","The server understood but refuses to authorize it."],
+[404,"Not Found","The resource doesn't exist at this URL."],
+[405,"Method Not Allowed","The HTTP method isn't supported for this resource."],
+[406,"Not Acceptable","No representation matches the client's Accept headers."],
+[407,"Proxy Authentication Required","Authenticate with the proxy first."],
+[408,"Request Timeout","The server timed out waiting for the request."],
+[409,"Conflict","The request conflicts with the current server state."],
+[410,"Gone","The resource is permanently gone (stronger than 404)."],
+[411,"Length Required","Content-Length header is required."],
+[412,"Precondition Failed","A precondition in the headers evaluated false."],
+[413,"Content Too Large","The payload exceeds the server's limits."],
+[414,"URI Too Long","The URL is longer than the server accepts."],
+[415,"Unsupported Media Type","The media type isn't supported."],
+[416,"Range Not Satisfiable","The requested range can't be served."],
+[417,"Expectation Failed","The Expect header couldn't be met."],
+[418,"I'm a Teapot","An April Fools' joke from 1998 — still celebrated."],
+[421,"Misdirected Request","The request went to a server that can't produce a response."],
+[422,"Unprocessable Content","Semantically invalid (often validation errors)."],
+[423,"Locked","The resource is locked (WebDAV)."],
+[424,"Failed Dependency","A dependent action failed (WebDAV)."],
+[425,"Too Early","The server won't process a request that might be replayed."],
+[426,"Upgrade Required","The client must switch protocols (e.g. to TLS)."],
+[428,"Precondition Required","The origin server requires conditional requests."],
+[429,"Too Many Requests","Rate limited — slow down and retry later."],
+[431,"Request Header Fields Too Large","Headers are too big."],
+[451,"Unavailable For Legal Reasons","Blocked for legal reasons (censorship, takedown)."],
+[500,"Internal Server Error","Something went wrong on the server — no specifics given."],
+[501,"Not Implemented","The server doesn't support the functionality."],
+[502,"Bad Gateway","An upstream server sent an invalid response."],
+[503,"Service Unavailable","Temporarily overloaded or down for maintenance."],
+[504,"Gateway Timeout","An upstream server didn't respond in time."],
+[505,"HTTP Version Not Supported","The HTTP version isn't supported."],
+[506,"Variant Also Negotiates","Transparent content negotiation misconfiguration."],
+[507,"Insufficient Storage","The server can't store the representation (WebDAV)."],
+[508,"Loop Detected","Infinite loop detected while processing (WebDAV)."],
+[510,"Not Extended","Further extensions to the request are required."],
+[511,"Network Authentication Required","Authenticate to gain network access (captive portal)."]
+];
+const $=id=>document.getElementById(id);
+let cat="all";
+function render(){
+  const q=$("q").value.trim().toLowerCase();
+  const out=CODES.filter(([code,name,desc])=>{
+    if(cat!=="all"&&String(code)[0]!==cat)return false;
+    if(!q)return true;
+    return String(code).includes(q)||name.toLowerCase().includes(q)||desc.toLowerCase().includes(q);
+  });
+  $("count").textContent=out.length+" of "+CODES.length+" codes";
+  $("list").innerHTML=out.length?out.map(([code,name,desc])=>
+    `<div class="card"><div class="code c${String(code)[0]}">${code}</div>`+
+    `<div class="body"><h3>${name}<span class="tag">${code>=100&&code<200?"Informational":code<300?"Success":code<400?"Redirection":code<500?"Client Error":"Server Error"}</span></h3><p>${desc}</p></div></div>`
+  ).join(""):'<div class="empty">No codes match your search.</div>';
+}
+$("q").addEventListener("input",render);
+$("chips").addEventListener("click",e=>{
+  const b=e.target.closest(".chip");if(!b)return;
+  cat=b.dataset.cat;
+  $("chips").querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===b));
+  render();
+});
+render();
+})();
+</script>
+</body>
+</html>

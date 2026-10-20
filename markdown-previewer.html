@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Previewer</title>
+    <style>
+    :root {
+        --bg-color: #1e1e1e;
+        --panel-bg: #252526;
+        --text-color: #cccccc;
+        --heading-color: #ffffff;
+        --accent-color: #007acc;
+        --border-color: #3c3c3c;
+        --blockquote-bg: #2d2d30;
+        --code-bg: #0d0d0d;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    header {
+        background-color: var(--panel-bg);
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        z-index: 10;
+    }
+
+    header h1 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--heading-color);
+        letter-spacing: 0.5px;
+    }
+
+    .main-container {
+        display: flex;
+        flex: 1;
+        height: calc(100vh - 45px);
+    }
+
+    .pane {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        width: 50%;
+    }
+
+    .pane-header {
+        background-color: var(--panel-bg);
+        padding: 8px 16px;
+        font-size: 12px;
+        text-transform: uppercase;
+        color: #858585;
+        border-bottom: 1px solid var(--border-color);
+        user-select: none;
+    }
+
+    .editor-textarea {
+        flex: 1;
+        background-color: var(--bg-color);
+        color: var(--heading-color);
+        border: none;
+        padding: 20px;
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.6;
+        resize: none;
+        outline: none;
+        overflow-y: auto;
+    }
+
+    .preview-container {
+        flex: 1;
+        padding: 20px 30px;
+        overflow-y: auto;
+        border-left: 1px solid var(--border-color);
+        background-color: var(--bg-color);
+        line-height: 1.7;
+        word-wrap: break-word;
+    }
+
+    /* Markdown Styling inside Preview */
+    .preview-container h1,
+    .preview-container h2,
+    .preview-container h3,
+    .preview-container h4,
+    .preview-container h5,
+    .preview-container h6 {
+        color: var(--heading-color);
+        margin-top: 24px;
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
+
+    .preview-container h1 { font-size: 2em; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+    .preview-container h2 { font-size: 1.5em; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
+    .preview-container h3 { font-size: 1.25em; }
+
+    .preview-container p { margin-bottom: 16px; }
+
+    .preview-container a { color: var(--accent-color); text-decoration: none; }
+    .preview-container a:hover { text-decoration: underline; }
+
+    .preview-container strong { color: var(--heading-color); font-weight: 600; }
+
+    .preview-container ul, .preview-container ol {
+        margin-bottom: 16px;
+        padding-left: 30px;
+    }
+
+    .preview-container li { margin-bottom: 4px; }
+
+    .preview-container blockquote {
+        border-left: 4px solid var(--accent-color);
+        padding: 10px 15px;
+        color: #9e9e9e;
+        background-color: var(--blockquote-bg);
+        margin-bottom: 16px;
+        border-radius: 0 4px 4px 0;
+    }
+
+    .preview-container blockquote p:last-child { margin-bottom: 0; }
+
+    .preview-container code {
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 0.9em;
+        color: #ce9178;
+    }
+
+    .preview-container pre {
+        background-color: var(--code-bg);
+        padding: 16px;
+        border-radius: 6px;
+        overflow-x: auto;
+        margin-bottom: 16px;
+        border: 1px solid var(--border-color);
+    }
+
+    .preview-container pre code {
+        background-color: transparent;
+        padding: 0;
+        color: #d4d4d4;
+        font-size: 14px;
+    }
+
+    .preview-container hr {
+        border: 0;
+        height: 1px;
+        background: var(--border-color);
+        margin: 24px 0;
+    }
+
+    @media (max-width: 768px) {
+        .main-container { flex-direction: column; }
+        .pane { width: 100%; height: 50%; }
+        .preview-container { border-left: none; border-top: 1px solid var(--border-color); }
+    }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Markdown Previewer</h1>
+</header>
+
+<div class="main-container">
+    <div class="pane">
+        <div class="pane-header">Editor</div>
+        <textarea id="editor" class="editor-textarea" spellcheck="false" placeholder="Type your markdown here..."></textarea>
+    </div>
+    <div class="pane">
+        <div class="pane-header">Preview</div>
+        <div id="preview" class="preview-container"></div>
+    </div>
+</div>
+
+<script>
+    const editor = document.getElementById('editor');
+    const preview = document.getElementById('preview');
+
+    const defaultMarkdown = `# Welcome to Markdown Previewer
+
+A fast, single-file markdown editor built without any external libraries.
+
+## Features
+
+- **Live parsing:** See your changes instantly.
+- **Dark UI:** Designed for developers.
+- **Responsive:** Works perfectly on mobile and desktop.
+
+### Code Support
+
+Inline \`code\` is supported, as well as code blocks:
+
+\`\`\`javascript
+function renderMarkdown(text) {
+console.log("Rendering...");
+return parse(text);
+}
+\`\`\`
+
+### Typography
+
+You can use *italics*, **bold text**, or ***both***!
+Creating [links to websites](https://example.com) is easy.
+
+> Blockquotes are great for highlighting important information or quoting someone.
+
+#### Lists
+
+- First item
+- Second item
+  - Nested un-ordered item
+- Another item
+
+Enjoy writing!`;
+
+    function parseMarkdown(md) {
+        // 1. Extract code blocks to prevent parsing inside them
+        const codeBlocks = [];
+        md = md.replace(/```([\s\S]*?)```/gm, (match, code) => {
+            const escapedCode = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            codeBlocks.push(`<pre><code>${escapedCode.trim()}</code></pre>`);
+            return `__CODEBLOCK_${codeBlocks.length - 1}__`;
+        });
+
+        // 2. Escape HTML tags in remaining text
+        md = md.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+        // 3. Inline Code
+        md = md.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+        // 4. Headers
+        md = md.replace(/^######\s(.*)$/gm, '<h6>$1</h6>');
+        md = md.replace(/^#####\s(.*)$/gm, '<h5>$1</h5>');
+        md = md.replace(/^####\s(.*)$/gm, '<h4>$1</h4>');
+        md = md.replace(/^###\s(.*)$/gm, '<h3>$1</h3>');
+        md = md.replace(/^##\s(.*)$/gm, '<h2>$1</h2>');
+        md = md.replace(/^#\s(.*)$/gm, '<h1>$1</h1>');
+
+        // 5. Bold & Italic
+        md = md.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+        md = md.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        md = md.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        md = md.replace(/___(.*?)___/g, '<strong><em>$1</em></strong>');
+        md = md.replace(/__(.*?)__/g, '<strong>$1</strong>');
+        md = md.replace(/_(.*?)_/g, '<em>$1</em>');
+
+        // 6. Links & Images (Images fallback to just link syntax for simplicity, or handle specifically)
+        md = md.replace(/!\[([^\]]+)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;">');
+        md = md.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+
+        // 7. Blockquotes
+        md = md.replace(/^(>|&gt;)\s(.*)$/gm, '<blockquote><p>$2</p></blockquote>');
+        md = md.replace(/<\/blockquote>\n<blockquote>/g, '\n'); // Merge blockquotes
+
+        // 8. Horizontal Rules
+        md = md.replace(/^---$/gm, '<hr>');
+
+        // 9. Lists
+        md = md.replace(/^(\s*)-\s(.*)$/gm, '<ul><li>$2</li></ul>');
+        md = md.replace(/^(\s*)\*\s(.*)$/gm, '<ul><li>$2</li></ul>');
+        md = md.replace(/^(\s*)\d+\.\s(.*)$/gm, '<ol><li>$2</li></ol>');
+
+        // Clean up adjacent list items
+        md = md.replace(/<\/ul>\n<ul>/g, '');
+        md = md.replace(/<\/ol>\n<ol>/g, '');
+
+        // 10. Paragraphs
+        // Split into blocks separated by double linebreaks
+        let blocks = md.split(/\n\n+/);
+        blocks = blocks.map(block => {
+            if (block.match(/^<(h|ul|ol|li|blockquote|pre|hr|__CODEBLOCK)/)) {
+                return block;
+            }
+            return `<p>${block.replace(/\n/g, '<br>')}</p>`;
+        });
+        md = blocks.join('\n');
+
+        // 11. Restore Code Blocks
+        codeBlocks.forEach((block, index) => {
+            md = md.replace(`__CODEBLOCK_${index}__`, block);
+        });
+
+        return md;
+    }
+
+    function updatePreview() {
+        const rawText = editor.value;
+        preview.innerHTML = parseMarkdown(rawText);
+    }
+
+    editor.addEventListener('input', updatePreview);
+
+    // Initialize
+    editor.value = defaultMarkdown;
+    updatePreview();
+</script>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090d16">
+<title>Cron Expression Explainer</title>
+<style>
+:root{color-scheme:dark;--bg:#090d16;--panel:#111827;--panel2:#0c1320;--border:#243248;--text:#e6edf8;--muted:#8b9bb3;--accent:#38d9f5;--green:#53e0ad;--red:#ff6b81;--purple:#a78bfa}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#182c43 0,transparent 55%),var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}button,input,select{font:inherit}button{cursor:pointer}.shell{max-width:1040px;margin:auto;padding:36px 22px 56px}.top{display:flex;align-items:center;gap:14px;margin-bottom:32px}.logo{width:48px;height:48px;border:1px solid #28566b;background:#102533;border-radius:13px;display:grid;place-items:center;color:var(--accent);font-size:24px;box-shadow:0 0 25px #38d9f512}.eyebrow{color:var(--accent);font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase}.top h1{font-size:clamp(22px,4vw,30px);letter-spacing:-1px;margin:2px 0 0}.subtitle{color:var(--muted);margin:0 0 26px;font-size:14px}.panel{background:linear-gradient(145deg,#121b2b,#0e1522);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 12px 32px #00000013}.label{display:block;font-size:12px;font-weight:750;letter-spacing:.8px;text-transform:uppercase;color:#a9bad0;margin-bottom:10px}.expression-row{display:flex;gap:10px}.expression{flex:1;min-width:0;background:#080e18;border:1px solid #30415a;border-radius:10px;padding:15px 16px;color:var(--accent);font:600 18px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;outline:none;transition:border .2s}.expression:focus{border-color:var(--accent);box-shadow:0 0 0 3px #38d9f518}.btn{border:1px solid #2a5268;background:#123044;color:var(--accent);padding:11px 17px;border-radius:9px;font-weight:700;transition:.15s}.btn:hover{filter:brightness(1.2);transform:translateY(-1px)}.btn.primary{background:var(--accent);color:#06121b;border-color:var(--accent)}.btn.secondary{background:#182234;color:var(--text);border-color:#34445c}.presets{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}.presets span{color:var(--muted);font-size:12px;margin-right:2px}.chip{background:#151f30;color:#b6c5d8;border:1px solid #2a3b51;border-radius:7px;padding:6px 10px;font:12px ui-monospace,monospace}.chip:hover{border-color:var(--accent);color:var(--accent)}.error{display:none;margin-top:14px;color:#ff8d9d;background:#311723;border:1px solid #673043;border-radius:9px;padding:12px 14px;font-size:13px}.error.show{display:block}.result-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}.result-head h2,.section-title{font-size:15px;margin:0;font-weight:750}.status{font-size:11px;font-weight:800;letter-spacing:.8px;color:var(--green);background:#123328;padding:5px 9px;border-radius:6px}.description{font-size:clamp(19px,3vw,25px);font-weight:650;letter-spacing:-.5px;line-height:1.45;margin:8px 0 12px;overflow-wrap:anywhere}.detail{font-size:13px;color:var(--muted);margin:0}.fields{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:22px}.field{background:#0a111e;border:1px solid #25344a;border-radius:10px;padding:13px 12px;min-width:0}.field code{display:block;font:700 20px ui-monospace,monospace;color:var(--accent);margin:8px 0;overflow-wrap:anywhere}.field strong{font-size:11px;color:#c0cddd;display:block;letter-spacing:.3px}.field small{display:block;color:var(--muted);font-size:11px;line-height:1.45}.runs{display:flex;flex-direction:column;gap:0;margin-top:17px}.run{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:13px;padding:14px 0;border-bottom:1px solid #202d40}.run:last-child{border-bottom:0}.run-num{width:30px;height:30px;display:grid;place-items:center;background:#12303d;border:1px solid #265163;color:var(--accent);border-radius:8px;font:700 12px ui-monospace,monospace}.run-date{font:600 13px ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}.run-relative{font-size:12px;color:var(--muted);margin-top:3px}.run-zone{font-size:11px;color:#a6b7cd;text-align:right}.muted{color:var(--muted)}.timezone-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:22px;padding-top:17px;border-top:1px solid var(--border)}.timezone-row label{font-size:13px;color:var(--muted)}select{background:#0a111e;color:var(--text);border:1px solid #30415a;padding:9px;border-radius:8px;max-width:100%}.note{font-size:12px;color:var(--muted);margin:15px 0 0}.examples{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:15px}.example{padding:13px;background:#0b1320;border:1px solid #243248;border-radius:9px;cursor:pointer;text-align:left;color:var(--text)}.example:hover{border-color:#38d9f5}.example code{display:block;color:var(--accent);font:600 13px ui-monospace,monospace;margin-bottom:4px}.example small{color:var(--muted);font-size:12px}.footer{text-align:center;color:#65768d;font-size:12px;padding-top:12px}.hidden{display:none!important}@media(max-width:650px){.shell{padding:23px 14px 35px}.panel{padding:17px}.expression-row{flex-direction:column}.expression{font-size:16px}.expression-row .btn{width:100%}.fields{grid-template-columns:repeat(2,minmax(0,1fr))}.field:last-child{grid-column:span 2}.run{grid-template-columns:30px minmax(0,1fr);gap:10px}.run-zone{grid-column:2;text-align:left}.examples{grid-template-columns:1fr}.timezone-row{align-items:flex-start;flex-direction:column}.timezone-row select{width:100%}}@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="top">
+<div class="logo" aria-hidden="true">◷</div>
+<div><div class="eyebrow">Developer Utilities / 01</div><h1>Cron Expression Explainer</h1></div>
+</header>
+<p class="subtitle">Decode cron schedules into plain English. Validate expressions and preview the next five execution times.</p>
+
+<section class="panel">
+<label class="label" for="cron">Cron expression</label>
+<div class="expression-row">
+<input id="cron" class="expression" value="*/15 * * * *" spellcheck="false" autocomplete="off" aria-describedby="error" aria-label="Cron expression">
+<button id="explain" class="btn primary">Explain schedule ↗</button>
+</div>
+<div class="presets"><span>Try an example:</span>
+<button class="chip" data-cron="* * * * *">Every minute</button>
+<button class="chip" data-cron="*/15 * * * *">Every 15 min</button>
+<button class="chip" data-cron="0 9 * * 1-5">Weekdays at 9</button>
+<button class="chip" data-cron="0 0 1 * *">Monthly</button>
+<button class="chip" data-cron="0 0 * * 0">Weekly</button>
+</div>
+<div id="error" class="error" role="alert"></div>
+</section>
+
+<section id="result" class="panel">
+<div class="result-head"><h2>Schedule overview</h2><span class="status" id="valid">● VALID EXPRESSION</span></div>
+<div id="description" class="description" aria-live="polite">Every 15 minutes</div>
+<p id="summary" class="detail">Runs at minute 0, 15, 30, and 45 of every hour.</p>
+<div class="fields" id="fields"></div>
+<div class="timezone-row"><label for="timezone">Display times in</label><select id="timezone"><option value="local">Your local timezone</option><option value="UTC">UTC</option></select></div>
+<p class="note">Standard five-field cron syntax: minute, hour, day of month, month, day of week. Future times are calculated locally in your browser.</p>
+</section>
+
+<section class="panel">
+<div class="result-head"><h2>Next 5 scheduled runs</h2><span id="run-count" class="muted" style="font-size:12px">Upcoming executions</span></div>
+<div id="runs" class="runs" aria-live="polite"></div>
+<p class="note">Times are shown after the current moment. The displayed timezone affects formatting, not the schedule's interpretation.</p>
+</section>
+
+<section class="panel">
+<h2 class="section-title">Cron syntax reference</h2>
+<div class="examples">
+<button class="example" data-cron="0 8 * * 1-5"><code>0 8 * * 1-5</code><small>At 08:00 every weekday, Monday through Friday.</small></button>
+<button class="example" data-cron="30 6 * * *"><code>30 6 * * *</code><small>Every day at 06:30.</small></button>
+<button class="example" data-cron="0 */2 * * *"><code>0 */2 * * *</code><small>Every two hours, on the hour.</small></button>
+<button class="example" data-cron="0 0 1,15 * *"><code>0 0 1,15 * *</code><small>At midnight on the 1st and 15th of each month.</small></button>
+<button class="example" data-cron="0 9 * * 1"><code>0 9 * * 1</code><small>Every Monday at 09:00.</small></button>
+<button class="example" data-cron="*/10 9-17 * * 1-5"><code>*/10 9-17 * * 1-5</code><small>Every 10 minutes from 09:00 through 17:59 on weekdays.</small></button>
+</div>
+<p class="note">Operators: <code>*</code> any value · <code>,</code> list · <code>-</code> range · <code>/</code> step. Supports standard five-field cron, named months/days, and Sunday as 0 or 7. Does not support seconds, year fields, or Quartz-specific operators.</p>
+</section>
+<footer class="footer">CRON EXPLAINER · CLIENT-SIDE ONLY · NO DATA SENT</footer>
+</div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const input=$('cron'),error=$('error'),desc=$('description'),summary=$('summary'),fields=$('fields'),runs=$('runs'),valid=$('valid'),tz=$('timezone');
+const specs=[
+{name:'Minute',min:0,max:59,names:null,any:'every minute',unit:'minute'},
+{name:'Hour',min:0,max:23,names:null,any:'every hour',unit:'hour'},
+{name:'Day of month',min:1,max:31,names:null,any:'every day',unit:'day of month'},
+{name:'Month',min:1,max:12,names:{JAN:1,FEB:2,MAR:3,APR:4,MAY:5,JUN:6,JUL:7,AUG:8,SEP:9,OCT:10,NOV:11,DEC:12},any:'every month',unit:'month'},
+{name:'Day of week',min:0,max:7,names:{SUN:0,MON:1,TUE:2,WED:3,THU:4,FRI:5,SAT:6},any:'every weekday value',unit:'day of week'}
+];
+const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+function parseField(raw,s){
+if(!raw)throw Error(s.name+': field cannot be empty.');
+const values=new Set(),parts=raw.toUpperCase().split(',');
+const number=v=>{if(s.names&&Object.hasOwn(s.names,v))return s.names[v];if(!/^\d+$/.test(v))throw Error(s.name+': invalid value "'+v+'".');const n=Number(v);if(n<s.min||n>s.max)throw Error(s.name+': value '+n+' must be between '+s.min+' and '+s.max+'.');return n;};
+for(const part of parts){if(!part)throw Error(s.name+': empty list item.');const seg=part.split('/');if(seg.length>2)throw Error(s.name+': invalid step syntax.');let step=1;if(seg.length===2){if(!/^\d+$/.test(seg[1])||Number(seg[1])<1)throw Error(s.name+': step must be a positive integer.');step=Number(seg[1]);}
+let start,end;if(seg[0]==='*'){start=s.min;end=s.max;}else if(seg[0].includes('-')){const r=seg[0].split('-');if(r.length!==2)throw Error(s.name+': invalid range.');start=number(r[0]);end=number(r[1]);if(start>end)throw Error(s.name+': range start must not exceed its end.');}else{start=number(seg[0]);end=seg.length===2?s.max:start;}
+for(let n=start;n<=end;n+=step)values.add(s.name==='Day of week'&&n===7?0:n);
+}
+return {values,raw,any:raw==='*',step:raw.includes('/')?Number(raw.split('/').pop()):null};
+}
+function parse(expr){const tokens=expr.trim().split(/\s+/);if(tokens.length!==5)throw Error('Expected exactly 5 fields: minute hour day-of-month month day-of-week.');return tokens.map((t,i)=>parseField(t,specs[i]));}
+function includesDay(f,day){return f.values.has(day);}
+function matches(date,p){
+if(!p[0].values.has(date.getMinutes())||!p[1].values.has(date.getHours())||!p[3].values.has(date.getMonth()+1))return false;
+const dom=p[2],dow=p[4],a=includesDay(dom,date.getDate()),b=includesDay(dow,date.getDay());
+if(dom.any&&dow.any)return true;if(dom.any)return b;if(dow.any)return a;return a||b;
+}
+function prettyValues(f,s){
+if(f.any)return 'Any '+s.unit;
+const v=[...f.values].sort((a,b)=>a-b);
+if(s.name==='Month')return v.map(n=>monthNames[n-1].slice(0,3)).join(', ');
+if(s.name==='Day of week')return v.map(n=>dayNames[n]).join(', ');
+return v.join(', ');
+}
+function describe(p){
+const [mi,hr,dom,mo,dow]=p;
+let out=[];
+if(mi.any&&hr.any)out.push('Every minute');
+else if(mi.any&&!hr.any){const hs=[...hr.values].sort((a,b)=>a-b);out.push('Every minute during '+(hs.length===1?'hour '+hs[0]: 'hours '+hs.join(', ')));}
+else if(mi.raw.includes('/')&&mi.raw.startsWith('*/')&&hr.any)out.push('Every '+mi.step+' minutes');
+else if(mi.raw.includes('/')&&mi.raw.startsWith('*/')&&!hr.any)out.push('Every '+mi.step+' minutes during selected hours');
+else if(!mi.any&&!hr.any&&mi.values.size===1&&hr.values.size===1)out.push('At '+pad([...hr.values][0])+':'+pad([...mi.values][0]));
+else if(!mi.any&&hr.any&&mi.values.size===1)out.push('At minute '+[...mi.values][0]+' of every hour');
+else if(!hr.any&&hr.values.size===1)out.push('At '+pad([...hr.values][0])+':'+(mi.any?'every minute':prettyValues(mi,specs[0])+' minutes'));
+else out.push((mi.any?'Every minute':mi.raw.startsWith('*/')?'Every '+mi.step+' minutes':'At minute '+prettyValues(mi,specs[0]))+(hr.any?' of every hour':' during '+prettyValues(hr,specs[1])));
+if(!mo.any)out.push('in '+[...mo.values].sort((a,b)=>a-b).map(n=>monthNames[n-1]).join(', '));
+if(!dom.any&&!dow.any)out.push('on day '+prettyValues(dom,specs[2])+' or '+prettyValues(dow,specs[4]));
+else if(!dom.any)out.push('on day '+prettyValues(dom,specs[2]));
+else if(!dow.any)out.push('on '+prettyValues(dow,specs[4]));
+return out.join(' ');
+}
+function pad(n){return String(n).padStart(2,'0');}
+function fieldExplanation(f,s){
+if(f.any)return 'Every '+s.unit;
+if(s.name==='Day of week')return [...f.values].sort((a,b)=>a-b).map(n=>dayNames[n].slice(0,3)).join(', ');
+if(s.name==='Month')return [...f.values].sort((a,b)=>a-b).map(n=>monthNames[n-1].slice(0,3)).join(', ');
+if(f.raw.includes('/'))return 'Every '+f.step+' from '+f.raw.split('/')[0];
+if(f.raw.includes('-'))return 'Range '+f.raw;
+return 'Selected: '+prettyValues(f,s);
+}
+function formatDate(d){
+const zone=tz.value==='UTC'?'UTC':undefined;
+const opts={weekday:'short',year:'numeric',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit',second:undefined,hour12:false};
+if(zone)opts.timeZone=zone;
+let s=new Intl.DateTimeFormat('en-US',opts).format(d);
+return s.replace(/,\s*(\d{4})/,' $1');
+}
+function relative(d,now){let diff=Math.max(0,d-now),mins=Math.round(diff/60000);if(mins<1)return 'In less than a minute';if(mins<60)return 'In '+mins+' minute'+(mins===1?'':'s');let h=Math.floor(mins/60),m=mins%60;if(h<24)return 'In '+h+' hour'+(h===1?'':'s')+(m?' '+m+' min':'');const days=Math.floor(h/24);return 'In '+days+' day'+(days===1?'':'s')+(h%24?' '+h%24+' hr':'');}
+function nextRuns(p){
+const result=[],d=new Date();d.setSeconds(0,0);d.setMinutes(d.getMinutes()+1);
+const limit=new Date(d.getTime()+366*24*60*60000);
+let iterations=0;
+while(result.length<5&&d<limit&&iterations<530000){if(matches(d,p))result.push(new Date(d));d.setMinutes(d.getMinutes()+1);iterations++;}
+if(result.length<5)throw Error('Could not find five occurrences within the next year. Check that your expression has a valid schedule.');
+return result;
+}
+function render(){
+error.classList.remove('show');error.textContent='';
+try{
+const p=parse(input.value);const upcoming=nextRuns(p);
+desc.textContent=describe(p);
+summary.textContent='Expression: '+input.value.trim()+' · Standard five-field cron · '+(p[2].any&&p[4].any?'Every calendar day pattern':!p[2].any&&!p[4].any?'Day-of-month and day-of-week use standard cron OR matching when both are restricted.':'Calendar-filtered schedule')+'.';
+valid.textContent='● VALID EXPRESSION';
+fields.innerHTML='';
+p.forEach((f,i)=>{const el=document.createElement('div');el.className='field';const code=document.createElement('code');code.textContent=f.raw;const strong=document.createElement('strong');strong.textContent=specs[i].name.toUpperCase();const small=document.createElement('small');small.textContent=fieldExplanation(f,specs[i]);el.append(code,strong,small);fields.append(el);});
+runs.innerHTML='';const now=Date.now();
+upcoming.forEach((d,i)=>{const row=document.createElement('div');row.className='run';const num=document.createElement('div');num.className='run-num';num.textContent=String(i+1).padStart(2,'0');const info=document.createElement('div');const date=document.createElement('div');date.className='run-date';date.textContent=formatDate(d);const rel=document.createElement('div');rel.className='run-relative';rel.textContent=relative(d,now);info.append(date,rel);const zone=document.createElement('div');zone.className='run-zone';zone.textContent=tz.value==='UTC'?'UTC':Intl.DateTimeFormat().resolvedOptions().timeZone||'Local time';row.append(num,info,zone);runs.append(row);});
+$('run-count').textContent='5 occurrences found';
+}catch(e){valid.textContent='● INVALID EXPRESSION';valid.style.color='var(--red)';valid.style.background='#351925';error.textContent=e.message;error.classList.add('show');desc.textContent='Unable to explain this expression';summary.textContent='Correct the expression to view its schedule and next run times.';fields.innerHTML='';runs.innerHTML='<p class="muted">Upcoming runs cannot be calculated until the expression is valid.</p>';$('run-count').textContent='No results';return;}
+valid.style.color='var(--green)';valid.style.background='#123328';
+}
+$('explain').addEventListener('click',render);
+input.addEventListener('keydown',e=>{if(e.key==='Enter')render();});
+document.querySelectorAll('[data-cron]').forEach(b=>b.addEventListener('click',()=>{input.value=b.dataset.cron;render();window.scrollTo({top:0,behavior:'smooth'});}));
+tz.addEventListener('change',render);
+render();
+})();
+</script>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+</body>
+</html>

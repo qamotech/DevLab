@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Easing Function Visualizer</title>
+<style>
+:root{--bg:#0b0e14;--panel:#121722;--line:#232c3d;--text:#e8edf5;--muted:#8b96ab;--accent:#22d3ee;color:var(--text);background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0}
+header{max-width:1100px;margin:auto;padding:26px 24px 18px}
+h1{font-size:22px;margin:0;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:13px;margin:6px 0 0}
+main{max-width:1100px;margin:auto;padding:0 24px 40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.card h3{margin:0 0 4px;font-size:14px}
+.card code{font:11.5px ui-monospace,Consolas,monospace;color:var(--muted)}
+.stage{position:relative;height:150px;background:#0a0d13;border:1px solid var(--line);border-radius:8px;margin:12px 0;overflow:hidden}
+.track{position:absolute;left:16px;right:16px;top:50%;height:2px;background:#2a3547}
+.dot{position:absolute;top:50%;left:16px;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px #22d3ee88}
+.curve{width:100%;height:90px;display:block;background:#0a0d13;border:1px solid var(--line);border-radius:8px}
+.card button{background:#1a2233;border:1px solid var(--line);color:var(--text);border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;width:100%}
+.card button:hover{border-color:var(--accent)}
+.controls{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.controls label{font-size:13px;color:var(--muted)}
+.controls input[type=range]{accent-color:var(--accent)}
+.controls button{background:var(--accent);border:0;color:#0b0e14;border-radius:8px;padding:10px 20px;font-weight:700;cursor:pointer}
+.custom{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:20px}
+.custom h3{margin:0 0 12px;font-size:14px}
+.sliders{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0}
+.sliders label{font-size:12px;color:var(--muted);display:block}
+.sliders input{width:100%;accent-color:var(--accent)}
+#customCurve{width:100%;height:160px;background:#0a0d13;border:1px solid var(--line);border-radius:8px}
+#customVal{font:13px ui-monospace,Consolas,monospace;color:var(--accent)}
+</style>
+</head>
+<body>
+<header><h1>Easing Function Visualizer</h1><p class="sub">Watch every CSS easing curve in motion.</p></header>
+<main>
+<div class="controls">
+<label>Duration <input type="range" id="dur" min="300" max="3000" value="1200" style="width:140px"> <span id="durVal">1.2s</span></label>
+<button id="playAll">▶ Play all</button>
+</div>
+<div class="grid" id="grid"></div>
+<div class="custom">
+<h3>Custom cubic-bezier</h3>
+<canvas id="customCurve"></canvas>
+<div class="sliders">
+<label>x1 <input type="range" id="x1" min="0" max="1" step="0.01" value="0.68"></label>
+<label>y1 <input type="range" id="y1" min="-1" max="2" step="0.01" value="-0.55"></label>
+<label>x2 <input type="range" id="x2" min="0" max="1" step="0.01" value="0.27"></label>
+<label>y2 <input type="range" id="y2" min="-1" max="2" step="0.01" value="1.55"></label>
+</div>
+<div id="customVal">cubic-bezier(0.68, -0.55, 0.27, 1.55)</div>
+<div class="stage" style="margin-top:12px"><div class="track"></div><div class="dot" id="customDot"></div></div>
+<button id="playCustom" style="background:#1a2233;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:10px 20px;font-weight:600;cursor:pointer">▶ Play custom</button>
+</div>
+</main>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const EASINGS=[
+["linear","linear"],["ease","ease"],["ease-in","ease-in"],["ease-out","ease-out"],["ease-in-out","ease-in-out"],
+["cubic-bezier(.17,.67,.35,1.2)","cubic-bezier(.17,.67,.35,1.2)"],["steps(5, jump-none)","steps(5, jump-none)"],
+["cubic-bezier(.68,-.55,.27,1.55)","cubic-bezier(.68,-.55,.27,1.55)"],["ease-in cubic","cubic-bezier(.55,.06,.68,.19)"]
+];
+const grid=$("grid");
+EASINGS.forEach(([name,fn],i)=>{
+  const c=document.createElement("div");c.className="card";
+  c.innerHTML=`<h3>${name}</h3><code>${fn}</code>
+    <div class="stage"><div class="track"></div><div class="dot" id="dot${i}"></div></div>
+    <button data-i="${i}">▶ Play</button>`;
+  grid.appendChild(c);
+});
+function play(i){
+  const dot=$("dot"+i),fn=EASINGS[i][1];
+  const dur=+$("dur").value;
+  dot.style.transition="none";dot.style.transform="translateX(0)";
+  void dot.offsetWidth;
+  const track=dot.parentElement.querySelector(".track");
+  const dist=track.offsetWidth-18;
+  dot.style.transition=`transform ${dur}ms ${fn}`;
+  dot.style.transform=`translateX(${dist}px)`;
+}
+grid.addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;play(+b.dataset.i);
+});
+$("dur").addEventListener("input",e=>{$("durVal").textContent=(e.target.value/1000).toFixed(1)+"s";});
+$("playAll").addEventListener("click",()=>{EASINGS.forEach((_,i)=>setTimeout(()=>play(i),i*120));});
+// custom curve
+const cv=$("customCurve"),ctx=cv.getContext("2d");
+function bez(t,p0,p1,p2,p3){const u=1-t;return u*u*u*p0+3*u*u*t*p1+3*u*t*t*p2+t*t*t*p3;}
+function drawCustom(){
+  const w=cv.width=cv.offsetWidth*2,h=cv.height=320;
+  ctx.clearRect(0,0,w,h);ctx.strokeStyle="#232c3d";ctx.lineWidth=2;
+  ctx.strokeRect(4,h*0.1,w-8,h*0.8);
+  const x1=+$("x1").value,y1=+$("y1").value,x2=+$("x2").value,y2=+$("y2").value;
+  const X=t=>8+t*(w-16),Y=v=>h*0.9-v*h*0.8;
+  ctx.strokeStyle="#22d3ee";ctx.lineWidth=5;ctx.beginPath();
+  for(let i=0;i<=100;i++){const t=i/100;const px=bez(t,0,x1,x2,1),py=bez(t,0,y1,y2,1);
+    i?ctx.lineTo(X(px),Y(py)):ctx.moveTo(X(px),Y(py));}
+  ctx.stroke();
+  ctx.fillStyle="#f472b6";
+  [[x1,y1],[x2,y2]].forEach(([x,y])=>{ctx.beginPath();ctx.arc(X(x),Y(y),10,0,7);ctx.fill();});
+  $("customVal").textContent=`cubic-bezier(${x1.toFixed(2)}, ${y1.toFixed(2)}, ${x2.toFixed(2)}, ${y2.toFixed(2)})`;
+}
+["x1","y1","x2","y2"].forEach(id=>$(id).addEventListener("input",drawCustom));
+$("playCustom").addEventListener("click",()=>{
+  const dot=$("customDot"),dur=+$("dur").value,fn=$("customVal").textContent;
+  dot.style.transition="none";dot.style.transform="translateX(0)";void dot.offsetWidth;
+  const dist=dot.parentElement.querySelector(".track").offsetWidth-18;
+  dot.style.transition=`transform ${dur}ms ${fn}`;
+  dot.style.transform=`translateX(${dist}px)`;
+});
+window.addEventListener("resize",drawCustom);
+drawCustom();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>JWT Decoder</title>
+<style>
+:root{--bg:#0b0e14;--panel:#121722;--line:#232c3d;--text:#e8edf5;--muted:#8b96ab;--accent:#fbbf24;--red:#fb7185;--grn:#6ce5bc;--blu:#7cc7ff;--prp:#c4a7fd;color:var(--text);background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0}
+header{max-width:1100px;margin:auto;padding:26px 24px 18px}
+h1{font-size:22px;margin:0;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:13px;margin:6px 0 0}
+main{max-width:1100px;margin:auto;padding:0 24px 40px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.pad{padding:20px}
+h2{font-size:13px;margin:0 0 14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted)}
+textarea{width:100%;min-height:180px;background:#0a0d13;border:1px solid var(--line);border-radius:8px;color:var(--text);padding:14px;font:12.5px/1.6 ui-monospace,Consolas,monospace;resize:vertical;word-break:break-all}
+textarea:focus{outline:none;border-color:var(--accent)}
+.btnrow{display:flex;gap:8px;margin-top:12px}
+button{background:#1a2233;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#0b0e14}
+pre{background:#0a0d13;border:1px solid var(--line);border-radius:8px;padding:14px;font:12.5px/1.7 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-all;margin:0 0 14px;color:#c9d4e8;max-height:300px;overflow:auto}
+pre .k{color:var(--blu)}pre .s{color:var(--grn)}pre .n{color:var(--accent)}pre .b{color:var(--prp)}
+.sect{font-size:12px;font-weight:700;margin:0 0 8px;letter-spacing:.5px}
+.sect.h{color:var(--red)}.sect.p{color:var(--prp)}.sect.s{color:var(--blu)}
+.sig{border-radius:8px;padding:12px 14px;font-size:13px;margin-top:4px}
+.sig.ok{background:#0f2e24;border:1px solid #2a5a48;color:var(--grn)}
+.sig.bad{background:#33141b;border:1px solid #6b2a35;color:var(--red)}
+.err{color:var(--red);font-size:13px;margin-top:10px}
+.meta{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.8}
+.meta b{color:var(--text)}
+@media(max-width:860px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>JWT Decoder</h1><p class="sub">Paste a JSON Web Token to inspect its header, payload and signature.</p></header>
+<main>
+<section class="panel"><div class="pad">
+<h2>Encoded token</h2>
+<textarea id="jwt" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." spellcheck="false"></textarea>
+<div class="btnrow">
+<button class="primary" id="sampleBtn">Load sample</button>
+<button id="clearBtn">Clear</button>
+<button id="copyBtn">Copy payload</button>
+</div>
+<div class="meta" id="meta"></div>
+<div class="err" id="err"></div>
+</div></section>
+<section class="panel"><div class="pad">
+<h2>Decoded</h2>
+<p class="sect h">HEADER — algorithm &amp; token type</p>
+<pre id="outH">—</pre>
+<p class="sect p">PAYLOAD — claims</p>
+<pre id="outP">—</pre>
+<p class="sect s">SIGNATURE</p>
+<div class="sig bad" id="outS">No token pasted yet.</div>
+</div></section>
+</main>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const SAMPLE="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ik5hdGhhbiBDbGFyayIsImlhdCI6MTc5MjUwNjAwMCwiZXhwIjoxNzkyNTQyMDAwLCJyb2xlIjoiZGV2ZWxvcGVyIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+function b64urlDecode(s){
+  s=s.replace(/-/g,"+").replace(/_/g,"/");
+  while(s.length%4)s+="=";
+  return decodeURIComponent(escape(atob(s)));
+}
+function syntax(json){
+  return json.replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*")(\s*:)?/g,m=>{
+      const cls=/^"/.test(m)?(/:$/.test(m)?"k":"s"):"n";
+      return `<span class="${cls}">${m}</span>`;
+    })
+    .replace(/\b(true|false|null)\b/g,'<span class="b">$1</span>');
+}
+let lastPayload="";
+function decode(){
+  const t=$("jwt").value.trim();
+  $("err").textContent="";$("meta").innerHTML="";
+  if(!t){$("outH").textContent="—";$("outP").textContent="—";
+    $("outS").className="sig bad";$("outS").textContent="No token pasted yet.";return;}
+  const parts=t.split(".");
+  if(parts.length!==3){$("err").textContent="Invalid JWT: expected 3 dot-separated segments (header.payload.signature).";return;}
+  try{
+    const h=JSON.parse(b64urlDecode(parts[0]));
+    const p=JSON.parse(b64urlDecode(parts[1]));
+    lastPayload=JSON.stringify(p,null,2);
+    $("outH").innerHTML=syntax(JSON.stringify(h,null,2));
+    $("outP").innerHTML=syntax(lastPayload);
+    const s=$("outS");
+    if(parts[2]){
+      s.className="sig ok";
+      s.innerHTML=`<b>Signature present</b> (${parts[2].length} chars, base64url). Signature verification needs the secret/key — this tool decodes only.`;
+    }else{s.className="sig bad";s.textContent="Empty signature segment — token is unsigned (alg: none).";}
+    let meta="";
+    if(p.exp){const d=new Date(p.exp*1000);const exp=p.exp*1000<Date.now();
+      meta+=`exp: <b>${d.toLocaleString()}</b> ${exp?'<span style="color:var(--red)">(EXPIRED)</span>':'<span style="color:var(--grn)">(valid)</span>'}<br>`;}
+    if(p.iat)meta+=`iat: <b>${new Date(p.iat*1000).toLocaleString()}</b><br>`;
+    if(p.iss)meta+=`iss: <b>${p.iss}</b><br>`;
+    if(p.sub)meta+=`sub: <b>${p.sub}</b><br>`;
+    if(h.alg)meta+=`alg: <b>${h.alg}</b>`;
+    $("meta").innerHTML=meta;
+  }catch(e){$("err").textContent="Couldn't decode: "+e.message;}
+}
+$("jwt").addEventListener("input",decode);
+$("sampleBtn").addEventListener("click",()=>{$("jwt").value=SAMPLE;decode();});
+$("clearBtn").addEventListener("click",()=>{$("jwt").value="";decode();});
+$("copyBtn").addEventListener("click",async()=>{
+  if(!lastPayload)return;
+  try{await navigator.clipboard.writeText(lastPayload);}catch(e){}
+});
+})();
+</script>
+</body>
+</html>

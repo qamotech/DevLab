@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Flexbox Playground</title>
+<style>
+:root{--bg:#0c0f16;--panel:#131823;--line:#293143;--text:#e9edf5;--muted:#96a1b7;--accent:#a995ff;--mint:#6ce5bc;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:var(--bg)}
+*{box-sizing:border-box}
+body{margin:0}
+button,input,select{font:inherit}
+button,select{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+button{color:var(--text)}
+header{max-width:1440px;margin:auto;padding:28px 32px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{width:42px;height:42px;border:1px solid #61518f;border-radius:12px;background:#241e3b;display:flex;align-items:center;justify-content:center;gap:4px}
+.logo span{width:6px;border-radius:2px;background:var(--accent);height:19px}
+.logo span:nth-child(2){height:27px}
+h1{font-size:21px;letter-spacing:-.6px;margin:0}
+.subtitle{font-size:12px;color:var(--muted);margin:5px 0 0}
+.badge{font:11px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--mint);display:flex;align-items:center;gap:7px;white-space:nowrap}
+.badge:before{content:"";width:6px;height:6px;background:var(--mint);border-radius:50%;box-shadow:0 0 12px #6ce5bc50}
+main{max-width:1440px;margin:auto;padding:0 32px 32px;display:grid;grid-template-columns:290px minmax(0,1fr);gap:20px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.panel-heading{display:flex;align-items:center;justify-content:space-between;padding:19px 20px;border-bottom:1px solid var(--line);gap:12px}
+h2{font-size:13px;margin:0;font-weight:600}
+.eyebrow{font:10px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
+.controls-body{padding:21px 20px}
+.field{margin-bottom:24px}
+.field:last-child{margin-bottom:0}
+label,.field-title{font-size:12px;font-weight:600;display:block;margin:0 0 9px}
+.property{color:var(--muted);font:11px ui-monospace,SFMono-Regular,Consolas,monospace;margin-top:7px}
+select{width:100%;background:#0e131d;border:1px solid #343e53;border-radius:8px;color:var(--text);padding:11px 10px}
+select:hover{border-color:#726196}
+.label-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.label-row output{font:12px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;margin:8px 0}
+.range-labels{display:flex;justify-content:space-between;color:#717e96;font:10px ui-monospace,SFMono-Regular,Consolas,monospace}
+.divider{height:1px;background:var(--line);margin:24px 0}
+.secondary{background:#1d2533;border:1px solid #344057;border-radius:7px;padding:8px 11px;font-size:12px;transition:background .15s}
+.secondary:hover{background:#2a3448}
+.reset{background:none;border:0;color:var(--muted);padding:0;font-size:12px}
+.reset:hover{color:var(--text)}
+.toggle{display:flex;align-items:center;gap:9px;font-weight:400;line-height:1.5;cursor:pointer}
+.toggle input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+.workspace{min-width:0;display:flex;flex-direction:column;gap:20px}
+.preview-heading{padding:17px 20px}
+.preview-title{display:flex;align-items:center;gap:10px}
+.preview-title .dot{width:7px;height:7px;background:var(--accent);border-radius:50%}
+.dimensions{font:11px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted)}
+.canvas-surround{padding:25px;background-color:#0f141f;background-image:radial-gradient(#333e542e 1px,transparent 1px);background-size:17px 17px}
+.canvas-label{font:11px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted);margin:0 0 12px;display:flex;justify-content:space-between}
+#container{display:flex;min-height:0;height:370px;padding:18px;border:1px dashed #55617a;border-radius:10px;overflow:auto;background:#101621b8;position:relative}
+.box{flex:0 0 76px;width:76px;min-height:66px;border:1px solid var(--box-border);background:var(--box-bg);color:var(--box-text);border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:10px;box-shadow:0 5px 15px #0000001f}
+.box-number{font-size:22px;font-weight:650;letter-spacing:-1px}
+.box-label{font:9px ui-monospace,SFMono-Regular,Consolas,monospace;opacity:.7;white-space:nowrap}
+.preview-footer{border-top:1px solid var(--line);padding:13px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;color:var(--muted);line-height:1.6}
+.key{display:flex;align-items:center;gap:7px}
+.key:before{content:"";height:7px;width:7px;background:var(--accent);border-radius:2px}
+.code-heading{padding:15px 20px}
+.file-name{font:12px ui-monospace,SFMono-Regular,Consolas,monospace;color:#bec9de}
+.code-wrap{padding:18px 20px 22px;overflow:auto}
+pre{margin:0;font:13px/1.95 ui-monospace,SFMono-Regular,Consolas,monospace;tab-size:2;color:#c3cde0}
+.selector{color:var(--accent)}
+.prop{color:#95baf7}
+.value{color:var(--mint)}
+.comment{color:#758199}
+.tip{font-size:12px;line-height:1.7;color:var(--muted);padding:0 2px;margin:0}
+.tip strong{color:#c6b9ff;font-weight:500}
+#toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,15px);padding:11px 18px;border:1px solid #4b655e;border-radius:10px;background:#1b3029;color:var(--mint);font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:5;max-width:90vw;text-align:center}
+#toast.visible{opacity:1;transform:translate(-50%,0)}
+@media(min-width:1100px){#container{height:405px}}
+@media(max-width:760px){header{padding:22px 18px}.badge{display:none}main{padding:0 16px 24px;grid-template-columns:1fr;gap:16px}.controls-body{display:grid;grid-template-columns:1fr 1fr;gap:19px 16px;padding:18px}.field{margin:0}.divider{display:none}.extras{grid-column:1/-1}.canvas-surround{padding:16px}#container{height:330px;padding:12px}.preview-footer{align-items:flex-start}.workspace{gap:16px}.panel-heading{padding:16px 18px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+<div class="brand">
+<div class="logo" aria-hidden="true"><span></span><span></span><span></span></div>
+<div><h1>Flexbox Playground</h1><p class="subtitle">Small changes. Instant understanding.</p></div>
+</div>
+<div class="badge">LIVE CSS SANDBOX</div>
+</header>
+<main>
+<aside class="panel" aria-labelledby="controls-title">
+<div class="panel-heading"><h2 id="controls-title">Container controls</h2><button class="reset" id="reset" type="button">Reset ↺</button></div>
+<div class="controls-body">
+<div class="field">
+<label for="direction">Direction</label>
+<select id="direction">
+<option value="row">row →</option>
+<option value="row-reverse">row-reverse ←</option>
+<option value="column">column ↓</option>
+<option value="column-reverse">column-reverse ↑</option>
+</select>
+<div class="property">flex-direction</div>
+</div>
+<div class="field">
+<label for="justify">Justify content</label>
+<select id="justify">
+<option value="flex-start">flex-start</option>
+<option value="center">center</option>
+<option value="flex-end">flex-end</option>
+<option value="space-between">space-between</option>
+<option value="space-around">space-around</option>
+<option value="space-evenly">space-evenly</option>
+</select>
+<div class="property">Main-axis distribution</div>
+</div>
+<div class="field">
+<label for="align">Align items</label>
+<select id="align">
+<option value="stretch">stretch</option>
+<option value="flex-start">flex-start</option>
+<option value="center">center</option>
+<option value="flex-end">flex-end</option>
+<option value="baseline">baseline</option>
+</select>
+<div class="property">Cross-axis alignment</div>
+</div>
+<div class="field">
+<label for="wrap">Wrapping</label>
+<select id="wrap">
+<option value="nowrap">nowrap</option>
+<option value="wrap">wrap</option>
+<option value="wrap-reverse">wrap-reverse</option>
+</select>
+<div class="property">flex-wrap</div>
+</div>
+<div class="field">
+<div class="label-row"><label for="gap">Gap</label><output for="gap" id="gap-value">16px</output></div>
+<input id="gap" type="range" min="0" max="64" value="16">
+<div class="range-labels"><span>0px</span><span>64px</span></div>
+</div>
+<div class="field">
+<div class="label-row"><label for="count">Items</label><output for="count" id="count-value">5</output></div>
+<input id="count" type="range" min="1" max="12" value="5">
+<div class="range-labels"><span>1 item</span><span>12 items</span></div>
+</div>
+<div class="extras">
+<div class="divider"></div>
+<label class="toggle" for="vary"><input id="vary" type="checkbox">Vary item heights & type sizes</label>
+<p class="property">Try this with center or baseline.</p>
+</div>
+</div>
+</aside>
+<section class="workspace" aria-label="Live playground">
+<section class="panel" aria-labelledby="preview-title">
+<div class="panel-heading preview-heading">
+<div class="preview-title"><span class="dot" aria-hidden="true"></span><h2 id="preview-title">Live preview</h2></div>
+<span id="dimensions" class="dimensions"></span>
+</div>
+<div class="canvas-surround">
+<div class="canvas-label"><span>.container</span><span id="axis-label">main axis →</span></div>
+<div id="container" aria-label="Flex container preview"></div>
+</div>
+<div class="preview-footer"><span class="key" id="item-summary">5 flex items</span><span>Overflow? Scroll inside the preview.</span></div>
+</section>
+<section class="panel" aria-labelledby="code-title">
+<div class="panel-heading code-heading"><h2 id="code-title" class="file-name">styles.css</h2><button id="copy" class="secondary" type="button">Copy CSS</button></div>
+<div class="code-wrap"><pre><code id="code"></code></pre></div>
+</section>
+<p class="tip" id="tip"><strong>Axis check:</strong> justify-content works along the main axis; align-items works across it.</p>
+</section>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+(function(){
+"use strict";
+const $ = id => document.getElementById(id);
+const defaults = {direction:"row",justify:"flex-start",align:"stretch",wrap:"nowrap",gap:"16",count:"5"};
+const controls = Object.fromEntries(Object.keys(defaults).map(key => [key,$(key)]));
+const container = $("container");
+const palette = [
+["#a995ff","#a995ff24","#cbbdff"],
+["#68cfed","#68cfed20","#9ae6fa"],
+["#6ce5bc","#6ce5bc20","#9bf0d2"],
+["#edbc71","#edbc7120","#f7d49c"],
+["#ee92b7","#ee92b720","#ffc0db"],
+["#929ef3","#929ef320","#c2caff"]
+];
+let cssText = "", toastTimer;
+
+function paintCode(lines){
+const code = $("code");
+code.replaceChildren();
+lines.forEach((line,index)=>{
+const match = line.match(/^(\s*)([\w-]+): (.*);$/);
+if(match){
+code.append(document.createTextNode(match));
+const prop = document.createElement("span");
+prop.className="prop";prop.textContent=match;
+const value=document.createElement("span");
+value.className="value";value.textContent=match;
+code.append(prop,document.createTextNode(": "),value,document.createTextNode(";"));
+}else{
+const span=document.createElement("span");
+if(line.startsWith("."))span.className="selector";
+if(line.startsWith("/*"))span.className="comment";
+span.textContent=line;
+code.append(span);
+}
+if(index<lines.length-1)code.append(document.createTextNode("\n"));
+});
+}
+
+function render(){
+const state=Object.fromEntries(Object.entries(controls).map(([key,element])=>[key,element.value]));
+const varied=$("vary").checked;
+Object.assign(container.style,{
+flexDirection:state.direction,
+justifyContent:state.justify,
+alignItems:state.align,
+flexWrap:state.wrap,
+gap:state.gap+"px"
+});
+const count=Number(state.count);
+while(container.children.length>count)container.lastElementChild.remove();
+while(container.children.length<count){
+const i=container.children.length;
+const box=document.createElement("div");
+box.className="box";
+box.innerHTML='<span class="box-number"></span><span class="box-label"></span>';
+box.firstElementChild.textContent=String(i+1).padStart(2,"0");
+box.lastElementChild.textContent="ITEM "+String(i+1).padStart(2,"0");
+const color=palette[i%palette.length];
+box.style.setProperty("--box-border",color);
+box.style.setProperty("--box-bg",color);
+box.style.setProperty("--box-text",color);
+container.append(box);
+}
+Array.from(container.children).forEach((box,i)=>{
+box.style.height=varied?(66+(i%3)*24)+"px":"";
+box.querySelector(".box-number").style.fontSize=varied?(18+(i%3)*7)+"px":"";
+});
+$("gap-value").textContent=state.gap+"px";
+$("count-value").textContent=state.count;
+$("item-summary").textContent=count+" flex item"+(count===1?"":"s");
+const arrows={row:"→","row-reverse":"←",column:"↓","column-reverse":"↑"};
+$("axis-label").textContent="main axis "+arrows[state.direction];
+const column=state.direction.startsWith("column");
+$("tip").innerHTML='<strong>Axis check:</strong> In '+(column?"column":"row")+' layouts, justify-content distributes items '+(column?"vertically":"horizontally")+'; align-items aligns them '+(column?"horizontally":"vertically")+'.';
+const lines=[
+".container {",
+" display: flex;",
+" flex-direction: "+state.direction+";",
+" justify-content: "+state.justify+";",
+" align-items: "+state.align+";",
+" flex-wrap: "+state.wrap+";",
+" gap: "+state.gap+"px;",
+" height: "+container.clientHeight+"px;",
+" padding: "+getComputedStyle(container).paddingTop+";",
+" box-sizing: border-box;",
+" overflow: auto;",
+"}",
+"",
+".item {",
+" flex: 0 0 76px;",
+" width: 76px;",
+" min-height: 66px;",
+" box-sizing: border-box;",
+"}"
+];
+if(varied){
+lines.push("",
+".item:nth-child(3n + 1) { height: 66px; }",
+".item:nth-child(3n + 2) { height: 90px; }",
+".item:nth-child(3n) { height: 114px; }"
+);
+}
+cssText=lines.join("\n");
+paintCode(lines);
+}
+
+function showToast(message){
+clearTimeout(toastTimer);
+$("toast").textContent=message;
+$("toast").classList.add("visible");
+toastTimer=setTimeout(()=>$("toast").classList.remove("visible"),2400);
+}
+
+async function copyCSS(){
+const text=cssText;
+try{
+if(!navigator.clipboard||!window.isSecureContext)throw new Error("fallback");
+await navigator.clipboard.writeText(text);
+showToast("CSS copied to clipboard");
+}catch(error){
+const textarea=document.createElement("textarea");
+textarea.value=text;
+textarea.style.cssText="position:fixed;top:0;left:0;opacity:0";
+textarea.setAttribute("readonly","");
+document.body.append(textarea);
+textarea.select();
+let copied=false;
+try{copied=document.execCommand("copy");}catch(e){}
+textarea.remove();
+$("copy").focus();
+showToast(copied?"CSS copied to clipboard":"Copy unavailable. Select the CSS and copy manually.");
+}
+}
+
+Object.values(controls).forEach(control=>control.addEventListener("input",render));
+$("vary").addEventListener("change",render);
+$("reset").addEventListener("click",()=>{
+Object.entries(defaults).forEach(([key,value])=>controls[key].value=value);
+$("vary").checked=false;
+container.scrollTop=0;container.scrollLeft=0;
+render();showToast("Default layout restored");
+});
+$("copy").addEventListener("click",copyCSS);
+let resizeFrame;
+function measure(){
+cancelAnimationFrame(resizeFrame);
+resizeFrame=requestAnimationFrame(()=>{
+$("dimensions").textContent=Math.round(container.getBoundingClientRect().width)+" × "+Math.round(container.getBoundingClientRect().height)+" px";
+render();
+});
+} if("ResizeObserver" in window)new ResizeObserver(measure).observe(container);
+else window.addEventListener("resize",measure);
+render();measure();
+})();
+</script>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+</body>
+</html>

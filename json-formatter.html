@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020">
+<title>JSON Formatter &amp; Validator</title>
+<style>
+:root{color-scheme:dark;--bg:#090e19;--panel:#101827;--panel2:#0c1421;--border:#253247;--text:#e5edf8;--muted:#8493aa;--accent:#38bdf8;--green:#4ade80;--red:#fb7185;--yellow:#fbbf24;--purple:#c4b5fd}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% -20%,#172c48 0,transparent 55%),var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+button,textarea,input{font:inherit}
+button{cursor:pointer;transition:border-color .15s,background .15s,transform .15s}
+button:active{transform:translateY(1px)}
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+header{border-bottom:1px solid var(--border);background:#0b1220d9;backdrop-filter:blur(14px)}
+.top{max-width:1440px;margin:auto;padding:19px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:13px;min-width:0}
+.logo{width:43px;height:43px;flex-shrink:0;display:grid;place-items:center;background:#102b40;border:1px solid #23516c;border-radius:12px;color:var(--accent);font-size:23px;font-weight:800}
+h1{font-size:19px;letter-spacing:-.55px;margin:0;font-weight:750}
+.subtitle{color:var(--muted);font-size:12px;margin-top:2px}
+.header-right{display:flex;align-items:center;gap:8px}
+.pill{display:flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--muted);white-space:nowrap}
+.dot{height:7px;width:7px;background:var(--green);border-radius:50%;box-shadow:0 0 9px #4ade8066}
+main{max-width:1440px;margin:auto;padding:25px 24px 35px}
+.intro{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;margin-bottom:21px}
+.intro h2{font-size:22px;letter-spacing:-.7px;margin:0 0 5px}
+.intro p{color:var(--muted);margin:0;font-size:13px}
+.shortcuts{font-size:11px;color:var(--muted);text-align:right;white-space:nowrap}
+kbd{font:11px ui-monospace,monospace;background:#182337;border:1px solid #344259;border-radius:4px;padding:2px 5px;color:#cbd5e1}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 14px;background:var(--panel);border:1px solid var(--border);border-bottom:0;border-radius:12px 12px 0 0}
+.toolgroup{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid #344258;border-radius:7px;padding:8px 12px;background:#172235;color:#dce7f5;font-size:12px;font-weight:650;white-space:nowrap}
+.btn:hover{background:#22324a;border-color:#506783}
+.btn.primary{background:#0c80b8;border-color:#0c9bdc;color:white}
+.btn.primary:hover{background:#079bdc}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{background:#1a2538;color:var(--text);border-color:var(--border)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.select{background:#111c2c;border:1px solid #344258;color:var(--text);border-radius:6px;padding:7px 9px;font-size:12px;max-width:145px}
+.workspace{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pane{min-width:0;border:1px solid var(--border);border-radius:0 0 11px 11px;overflow:hidden;background:var(--panel2)}
+.pane.output-pane{border-radius:0 0 11px 11px}
+.pane-head{height:43px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;border-bottom:1px solid var(--border);background:#101a2a;gap:8px}
+.pane-title{font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px}
+.fileicon{color:var(--accent);font:700 12px ui-monospace,monospace}
+.pane-meta{font-size:11px;color:var(--muted)}
+.editor-wrap{position:relative;height:460px;display:flex;background:#0a111d;overflow:hidden}
+.line-numbers{width:43px;flex-shrink:0;overflow:hidden;padding:14px 8px 20px 0;text-align:right;color:#506078;background:#0d1624;border-right:1px solid #1e2b3e;font:12px/21px ui-monospace,SFMono-Regular,Consolas,monospace;user-select:none;white-space:pre}
+.line-numbers .error-line{color:var(--red);font-weight:800}
+textarea.editor{width:100%;height:100%;resize:none;border:0;outline:none;padding:14px 14px 24px;background:transparent;color:#cbd5e1;caret-color:var(--accent);font:12px/21px ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre;tab-size:2;overflow:auto;min-width:0}
+textarea.editor:focus-visible{outline:none}
+.output-scroll{height:460px;overflow:auto;background:#0a111d;position:relative}
+.code-output{margin:0;padding:14px 17px 24px;color:#cbd5e1;font:12px/21px ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre;min-height:100%;tab-size:2;overflow:visible}
+.code-output .ln{display:inline-block;width:32px;margin-right:12px;text-align:right;color:#44546b;user-select:none}
+.key{color:#7dd3fc}.string{color:#a5e6a0}.number{color:#fbbf24}.boolean{color:#c4b5fd}.null{color:#fb91bb}.punct{color:#8b9ab1}
+.placeholder{height:100%;min-height:300px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;text-align:center;padding:25px;color:var(--muted)}
+.placeholder .big{font-size:31px;color:#3b506d}
+.placeholder strong{font-size:13px;color:#b4c2d5}
+.placeholder span{font-size:12px;max-width:250px}
+.statusbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 13px;border-top:1px solid var(--border);background:#101827;font-size:11px;color:var(--muted)}
+.statusleft{display:flex;align-items:center;gap:9px;min-width:0}
+.status-icon{font-weight:800;font-size:13px}
+.statusbar.valid .status-icon{color:var(--green)}
+.statusbar.invalid .status-icon{color:var(--red)}
+.statusbar.idle .status-icon{color:var(--muted)}
+.status-text{overflow-wrap:anywhere}
+.stats{display:flex;gap:13px;flex-wrap:wrap}
+.stats span{white-space:nowrap}
+.stats b{color:#dce7f5;font-weight:600}
+.error-details{display:none;margin-top:12px;padding:13px 15px;background:#25131b;border:1px solid #633044;border-radius:9px;color:#fecdd3;font-size:12px}
+.error-details.visible{display:block}
+.error-heading{display:flex;align-items:center;gap:8px;font-weight:750;margin-bottom:6px}
+.error-message{color:#fda4af;overflow-wrap:anywhere}
+.error-location{margin-top:7px;color:#d2a5b0}
+.error-actions{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+.error-actions button{background:#3b1c2a;border:1px solid #743348;color:#fecdd3;border-radius:5px;padding:5px 9px;font-size:11px}
+.lower{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.info-card{padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--panel)}
+.info-title{font-size:12px;font-weight:750;margin-bottom:10px}
+.feature-list{display:flex;gap:8px;flex-wrap:wrap}
+.feature{display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:6px;background:#131f30;border:1px solid #23344b;color:#aab9ce;font-size:11px}
+.feature i{color:var(--accent);font-style:normal}
+.examples{display:flex;gap:7px;flex-wrap:wrap}
+.example{font-size:11px;color:#b7c6d9;background:#141f30;border:1px solid #2c3b51;border-radius:6px;padding:6px 9px}
+.example:hover{color:white;border-color:var(--accent)}
+footer{max-width:1440px;margin:auto;padding:0 24px 23px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#52637a;font-size:11px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,12px);background:#17392b;border:1px solid #286847;color:#bbf7d0;padding:10px 16px;border-radius:8px;font-size:12px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:5;box-shadow:0 8px 30px #0005}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(min-width:1100px){.workspace{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+@media(max-width:760px){.top{padding:15px 16px}.logo{width:38px;height:38px}h1{font-size:16px}.subtitle{font-size:11px}.header-right .pill:last-child{display:none}main{padding:20px 14px 28px}.intro{align-items:flex-start;flex-direction:column}.shortcuts{text-align:left}.toolbar{align-items:flex-start;padding:10px}.toolgroup{gap:6px}.btn{padding:8px 9px}.workspace{grid-template-columns:1fr;gap:12px}.pane,.pane.output-pane{border-radius:9px}.editor-wrap,.output-scroll{height:340px}.lower{grid-template-columns:1fr}.toolbar{border-radius:10px 10px 0 0}.select{max-width:125px}footer{padding:0 14px 20px}}
+@media(max-width:380px){.header-right{display:none}.toolgroup{width:100%}.toolgroup .btn{flex:1}.pane-meta{font-size:10px}.editor-wrap,.output-scroll{height:300px}}
+</style>
+</head>
+<body>
+<header>
+<div class="top">
+<div class="brand">
+<div class="logo">{ }</div>
+<div><h1>JSON Formatter <span style="color:var(--accent)">&amp;</span> Validator</h1><div class="subtitle">Format · Validate · Inspect · Minify</div></div>
+</div>
+<div class="header-right">
+<div class="pill"><span class="dot"></span> Runs locally</div>
+<div class="pill">No uploads · No dependencies</div>
+</div>
+</div>
+</header>
+<main>
+<section class="intro">
+<div><h2>JSON Workbench</h2><p>Format your JSON, catch syntax errors, and copy clean output instantly.</p></div>
+<div class="shortcuts"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> Format &nbsp; <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>M</kbd> Minify</div>
+</section>
+<div class="toolbar">
+<div class="toolgroup">
+<button class="btn primary" id="formatBtn" title="Pretty-print JSON (Ctrl+Enter)">⌘ Format</button>
+<button class="btn" id="minifyBtn" title="Minify JSON (Ctrl+Shift+M)">⇣ Minify</button>
+<button class="btn" id="validateBtn">✓ Validate</button>
+</div>
+<div class="toolgroup">
+<label for="indent" style="font-size:11px;color:var(--muted)">Indent</label>
+<select class="select" id="indent" aria-label="Indentation size"><option value="2">2 spaces</option><option value="4">4 spaces</option><option value="tab">Tab</option></select>
+<button class="btn ghost" id="clearBtn">✕ Clear</button>
+<button class="btn ghost" id="sampleBtn">↻ Sample</button>
+</div>
+</div>
+<section class="workspace">
+<div class="pane">
+<div class="pane-head"><div class="pane-title"><span class="fileicon">JSON</span> Input</div><div class="pane-meta" id="inputMeta">0 lines · 0 chars</div></div>
+<div class="editor-wrap">
+<div class="line-numbers" id="lineNumbers" aria-hidden="true">1</div>
+<textarea class="editor" id="input" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-label="JSON input" placeholder='Paste your JSON here...&#10;&#10;{&#10; "name": "Example",&#10; "active": true&#10;}'></textarea>
+</div>
+<div class="statusbar idle" id="inputStatus"><div class="statusleft"><span class="status-icon">●</span><span class="status-text">Ready for input</span></div><div class="stats"><span id="inputBytes">0 B</span></div></div>
+</div>
+<div class="pane output-pane">
+<div class="pane-head"><div class="pane-title"><span class="fileicon">OUT</span> Output</div><div class="toolgroup"><div class="pane-meta" id="outputMeta">Waiting for input</div><button class="btn" id="copyBtn" disabled>⧉ Copy</button></div></div>
+<div class="output-scroll" id="outputScroll">
+<div class="placeholder" id="outputPlaceholder"><div class="big">{ }</div><strong>Your formatted JSON appears here</strong><span>Paste JSON on the left, then select Format or Minify.</span></div>
+<pre class="code-output" id="output" hidden></pre>
+</div>
+<div class="statusbar idle" id="outputStatus"><div class="statusleft"><span class="status-icon">●</span><span class="status-text">No output yet</span></div><div class="stats"><span id="outputBytes">0 B</span></div></div>
+</div>
+</section>
+<div class="error-details" id="errorDetails" role="alert" aria-live="polite"><div class="error-heading"><span>⚠</span><span id="errorTitle">JSON syntax error</span></div><div class="error-message" id="errorMessage"></div><div class="error-location" id="errorLocation"></div><div class="error-actions"><button id="jumpErrorBtn">Jump to error line ↗</button><button id="dismissErrorBtn">Dismiss</button></div></div>
+<section class="lower">
+<div class="info-card"><div class="info-title">TOOLS</div><div class="feature-list"><div class="feature"><i>✓</i> Syntax validation</div><div class="feature"><i>↕</i> Pretty print</div><div class="feature"><i>⇣</i> Minification</div><div class="feature"><i>⧉</i> Clipboard copy</div><div class="feature"><i>⌖</i> Error location</div><div class="feature"><i>⌘</i> Keyboard shortcuts</div></div></div>
+<div class="info-card"><div class="info-title">QUICK EXAMPLES</div><div class="examples"><button class="example" data-example="valid">Valid JSON</button><button class="example" data-example="array">Array</button><button class="example" data-example="nested">Nested object</button><button class="example" data-example="invalid">Invalid JSON</button></div></div>
+</section>
+</main>
+<footer><span>JSON Workbench <span style="color:var(--accent)">/</span> Client-side processing</span><span>Powered by native JavaScript · Your data stays in your browser</span></footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const input=$("input"),output=$("output"),placeholder=$("outputPlaceholder");
+let lastText="",lastMode="format",errorLine=1,errorColumn=1,toastTimer;
+const examples={
+valid:'{\n "name": "JSON Workbench",\n "version": "1.0.0",\n "active": true,\n "features": ["format", "validate", "minify"],\n "author": null\n}',
+array:'[\n {"id": 1, "name": "Alpha"},\n {"id": 2, "name": "Beta"},\n {"id": 3, "name": "Gamma"}\n]',
+nested:'{\n "user": {\n "id": 42,\n "profile": {\n "displayName": "Developer",\n "preferences": {"theme": "dark", "indent": 2}\n }\n },\n "permissions": ["read", "write"],\n "verified": true\n}',
+invalid:'{\n "name": "Broken JSON",\n "count": 3,\n "active": true,\n "items": [1, 2, 3,]\n}'
+};
+function bytes(s){const n=new TextEncoder().encode(s).length;if(n<1024)return n+" B";if(n<1048576)return (n/1024).toFixed(1)+" KB";return (n/1048576).toFixed(2)+" MB"}
+function countLines(s){return s?s.split("\n").length:0}
+function updateMeta(){
+const s=input.value;
+$("inputMeta").textContent=countLines(s)+" lines · "+s.length+" chars";
+$("inputBytes").textContent=bytes(s);
+updateLineNumbers();
+}
+function updateLineNumbers(markLine){
+const lines=countLines(input.value);
+let str="";
+for(let i=1;i<=lines;i++)str+=i+(i===markLine?" ⚠":"")+(i===lines?"":"\n");
+$("lineNumbers").textContent=str||"1";
+$("lineNumbers").querySelectorAll(".error-line").forEach(n=>n.classList.remove("error-line"));
+if(markLine){
+const nums=$("lineNumbers").textContent.split("\n");
+$("lineNumbers").innerHTML=nums.map((n,i)=>i+1===markLine?'<span class="error-line">'+iPlusOne(i+1)+'</span>':String(i+1)).join("\n");
+}
+}
+function iPlusOne(n){return n+" ⚠"}
+function syncScroll(){ $("lineNumbers").scrollTop=input.scrollTop; }
+input.addEventListener("scroll",syncScroll);
+function setStatus(id,type,message){
+const el=$(id);el.className="statusbar "+type;
+el.querySelector(".status-icon").textContent=type==="valid"?"✓":type==="invalid"?"⚠":"●";
+el.querySelector(".status-text").textContent=message;
+}
+function setOutput(text,mode){
+lastText=text;lastMode=mode;
+placeholder.hidden=true;output.hidden=false;
+output.innerHTML=highlight(text);
+$("copyBtn").disabled=false;
+$("outputMeta").textContent=mode==="minify"?"Minified":"Formatted";
+$("outputBytes").textContent=bytes(text);
+setStatus("outputStatus","valid",mode==="minify"?"Minified successfully":"Output generated successfully");
+$("errorDetails").classList.remove("visible");
+}
+function clearOutput(){
+lastText="";output.textContent="";output.hidden=true;placeholder.hidden=false;
+$("copyBtn").disabled=true;$("outputMeta").textContent="Waiting for input";$("outputBytes").textContent="0 B";
+setStatus("outputStatus","idle","No output yet");
+}
+function escapeHtml(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+function highlight(text){
+if(!text)return "";
+const re=/"(?:\\.|[^"\\])*"(?=\s*:)|"(?:\\.|[^"\\])*"|\b(?:true|false)\b|\bnull\b|-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?|[{}\[\],:]/g;
+let result="",last=0,m;
+while((m=re.exec(text))!==null){
+result+=escapeHtml(text.slice(last,m.index));
+const t=m[0];let cls="punct";
+if(t[0]==='"'){
+const tail=text.slice(re.lastIndex);
+const isKey=/^\s*:/.test(tail);
+cls=isKey?"key":"string";
+}else if(t==="true"||t==="false")cls="boolean";
+else if(t==="null")cls="null";
+else if(/^(-?\d|\.\d)/.test(t))cls="number";
+result+='<span class="'+cls+'">'+escapeHtml(t)+'</span>';
+last=re.lastIndex;
+}
+result+=escapeHtml(text.slice(last));
+return result;
+}
+function getIndent(){const v=$("indent").value;return v==="tab"?"\t":" ".repeat(Number(v))}
+function locateParseError(err,src){
+let message=String(err&&err.message||"Invalid JSON");
+let line=1,col=1;
+const match=message.match(/(?:position|at position)\s+(\d+)/i);
+let pos=-1;
+if(match)pos=Number(match[1]);
+if(pos<0){
+const at=message.match(/line\s+(\d+)\s+column\s+(\d+)/i);
+if(at){line=Number(at[1]);col=Number(at[2]);return{message,line,col,pos:-1}}
+}
+if(pos>=0){
+pos=Math.max(0,Math.min(pos,src.length));
+const before=src.slice(0,pos);
+line=1+(before.match(/\n/g)||[]).length;
+const idx=before.lastIndexOf("\n");
+col=pos-(idx<0?-1:idx);
+}
+return{message,line,col,pos};
+}
+function showError(err,src){
+const e=locateParseError(err,src);
+errorLine=e.line;errorColumn=e.col;
+$("errorTitle").textContent="Invalid JSON — line "+e.line+", column "+e.col;
+$("errorMessage").textContent=e.message;
+$("errorLocation").textContent="Line "+e.line+", column "+e.col+(e.pos>=0?" · character "+(e.pos+1):"");
+$("errorDetails").classList.add("visible");
+setStatus("inputStatus","invalid","Invalid JSON · line "+e.line+", column "+e.col);
+updateLineNumbers(e.line);
+clearOutput();
+$("outputMeta").textContent="Validation failed";
+$("outputBytes").textContent="0 B";
+}
+function parseInput(){
+const src=input.value;
+if(!src.trim()){
+setStatus("inputStatus","idle","Enter JSON to validate");
+clearOutput();updateLineNumbers();return null;
+}
+try{
+const value=JSON.parse(src);
+setStatus("inputStatus","valid","Valid JSON");
+updateLineNumbers();
+return value;
+}catch(err){showError(err,src);return null}
+}
+function format(){
+const src=input.value;
+if(!src.trim()){parseInput();return}
+try{
+const value=JSON.parse(src);
+const text=JSON.stringify(value,null,getIndent());
+setStatus("inputStatus","valid","Valid JSON");
+updateLineNumbers();
+setOutput(text,"format");
+$("errorDetails").classList.remove("visible");
+}catch(err){showError(err,src)}
+}
+function minify(){
+const src=input.value;
+if(!src.trim()){parseInput();return}
+try{
+const value=JSON.parse(src);
+const text=JSON.stringify(value);
+setStatus("inputStatus","valid","Valid JSON");
+updateLineNumbers();
+setOutput(text,"minify");
+$("errorDetails").classList.remove("visible");
+}catch(err){showError(err,src)}
+}
+function validate(){
+const v=parseInput();
+if(v!==null){
+$("errorDetails").classList.remove("visible");
+$("outputMeta").textContent="Valid JSON";
+setStatus("outputStatus","valid","Validation passed");
+showToast("JSON is valid");
+}
+}
+function showToast(message){
+const el=$("toast");el.textContent=message;el.classList.add("show");
+clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),2200);
+}
+async function copyOutput(){
+if(!lastText)return;
+try{
+if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(lastText);
+else{
+const ta=document.createElement("textarea");ta.value=lastText;
+ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();
+const ok=document.execCommand("copy");ta.remove();if(!ok)throw Error("Copy failed");
+}
+showToast("Output copied to clipboard");
+}catch(e){showToast("Clipboard unavailable — select and copy the output")}
+}
+function clearAll(){
+input.value="";updateMeta();clearOutput();setStatus("inputStatus","idle","Ready for input");
+$("errorDetails").classList.remove("visible");input.focus();
+}
+function jumpError(){
+const lines=input.value.split("\n");let offset=0;
+for(let i=0;i<errorLine-1&&i<lines.length;i++)offset+=lines[i].length+1;
+offset+=Math.min(Math.max(0,errorColumn-1),(lines[errorLine-1]||"").length);
+input.focus();input.setSelectionRange(offset,Math.min(offset+1,input.value.length));
+const lineHeight=21;input.scrollTop=Math.max(0,(errorLine-3)*lineHeight);
+syncScroll();
+}
+$("formatBtn").addEventListener("click",format);
+$("minifyBtn").addEventListener("click",minify);
+$("validateBtn").addEventListener("click",validate);
+$("copyBtn").addEventListener("click",copyOutput);
+$("clearBtn").addEventListener("click",clearAll);
+$("sampleBtn").addEventListener("click",()=>{input.value=examples.valid;updateMeta();format();input.focus()});
+$("dismissErrorBtn").addEventListener("click",()=>$("errorDetails").classList.remove("visible"));
+$("jumpErrorBtn").addEventListener("click",jumpError);
+input.addEventListener("input",()=>{
+updateMeta();
+$("errorDetails").classList.remove("visible");
+if(!input.value.trim()){
+clearOutput();setStatus("inputStatus","idle","Ready for input");return;
+}
+setStatus("inputStatus","idle","Input changed · validate to check");
+});
+input.addEventListener("keydown",e=>{
+if(e.key==="Tab"){
+e.preventDefault();
+const start=input.selectionStart,end=input.selectionEnd,indent=getIndent();
+input.setRangeText(indent,start,end,"end");updateMeta();
+}
+if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();format()}
+if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key.toLowerCase()==="m"){e.preventDefault();minify()}
+});
+document.querySelectorAll("[data-example]").forEach(btn=>btn.addEventListener("click",()=>{
+input.value=examples[btn.dataset.example];updateMeta();
+if(btn.dataset.example==="invalid")validate();else format();
+}));
+updateMeta();
+})();
+</script>
+</body>
+</html>

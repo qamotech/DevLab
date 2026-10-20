@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Contrast Checker (WCAG)</title>
+<style>
+:root{--bg:#0b0e14;--panel:#121722;--line:#232c3d;--text:#e8edf5;--muted:#8b96ab;--accent:#a3e635;--grn:#6ce5bc;--red:#fb7185;color:var(--text);background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0}
+header{max-width:1000px;margin:auto;padding:26px 24px 18px}
+h1{font-size:22px;margin:0;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:13px;margin:6px 0 0}
+main{max-width:1000px;margin:auto;padding:0 24px 40px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:20px}
+.pad{padding:22px}
+h2{font-size:13px;margin:0 0 16px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted)}
+.pickrow{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.swatch{border-radius:12px;border:1px solid var(--line);overflow:hidden}
+.swatchhead{padding:30px 20px;text-align:center}
+.swatchhead .hex{font:700 22px ui-monospace,Consolas,monospace;text-shadow:0 1px 4px #000a}
+.swatchbody{padding:16px;background:#0d121c}
+label{font-size:12px;font-weight:600;display:block;margin-bottom:8px;color:var(--muted)}
+input[type=color]{width:100%;height:48px;border:1px solid var(--line);border-radius:8px;background:#0e131d;padding:4px;cursor:pointer;margin-bottom:10px}
+input[type=text]{width:100%;background:#0e131d;border:1px solid var(--line);border-radius:8px;color:var(--text);padding:10px;font:14px ui-monospace,Consolas,monospace}
+.ratio{text-align:center;padding:8px 0 4px}
+.ratio .big{font:700 56px/1 ui-monospace,Consolas,monospace}
+.ratio .lbl{color:var(--muted);font-size:13px;margin-top:8px}
+.badges{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.badge{border-radius:999px;padding:8px 18px;font-size:13px;font-weight:700;border:1px solid var(--line)}
+.badge.pass{background:#0f2e24;border-color:#2a5a48;color:var(--grn)}
+.badge.fail{background:#33141b;border-color:#6b2a35;color:var(--red)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--muted);font-weight:600;padding:10px 12px;border-bottom:1px solid var(--line);font-size:12px;text-transform:uppercase;letter-spacing:.8px}
+td{padding:10px 12px;border-bottom:1px solid #1a2233}
+td:last-child{font-family:ui-monospace,Consolas,monospace}
+.swap{background:#1a2233;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer;width:100%;margin-top:14px}
+@media(max-width:700px){.pickrow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>Contrast Checker (WCAG)</h1><p class="sub">Test text/background pairs against WCAG 2.1 contrast rules.</p></header>
+<main>
+<div class="panel"><div class="pad">
+<h2>Pick colors</h2>
+<div class="pickrow">
+<div class="swatch">
+<div class="swatchhead" id="fgPrev"><span class="hex" id="fgHex">#FFFFFF</span></div>
+<div class="swatchbody"><label>Foreground (text)</label>
+<input type="color" id="fg" value="#ffffff">
+<input type="text" id="fgT" value="#ffffff" spellcheck="false"></div>
+</div>
+<div class="swatch">
+<div class="swatchhead" id="bgPrev"><span class="hex" id="bgHex">#0B0E14</span></div>
+<div class="swatchbody"><label>Background</label>
+<input type="color" id="bg" value="#0b0e14">
+<input type="text" id="bgT" value="#0b0e14" spellcheck="false"></div>
+</div>
+</div>
+<button class="swap" id="swapBtn">⇅ Swap colors</button>
+</div></div>
+<div class="panel"><div class="pad">
+<h2>Result</h2>
+<div class="ratio"><div class="big" id="ratioBig">—</div><div class="lbl">contrast ratio</div></div>
+<div class="badges" id="badges"></div>
+</div></div>
+<div class="panel"><div class="pad">
+<h2>WCAG thresholds</h2>
+<table>
+<tr><th>Level</th><th>Normal text</th><th>Large text (18pt+ / 14pt+ bold)</th></tr>
+<tr><td>AA</td><td>≥ 4.5 : 1</td><td>≥ 3 : 1</td></tr>
+<tr><td>AAA</td><td>≥ 7 : 1</td><td>≥ 4.5 : 1</td></tr>
+</table>
+</div></div>
+</main>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+function lum(hex){
+  const c=hex.replace("#","");
+  const r=parseInt(c.substr(0,2),16)/255,g=parseInt(c.substr(2,2),16)/255,b=parseInt(c.substr(4,2),16)/255;
+  const f=v=>v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);
+  return 0.2126*f(r)+0.7152*f(g)+0.0722*f(b);
+}
+function norm(v){
+  v=v.trim();if(!v.startsWith("#"))v="#"+v;
+  if(/^#[0-9a-fA-F]{3}$/.test(v))v="#"+v[1]+v[1]+v[2]+v[2]+v[3]+v[3];
+  return /^#[0-9a-fA-F]{6}$/.test(v)?v.toLowerCase():null;
+}
+function render(){
+  const fh=norm($("fgT").value)||"#ffffff",bh=norm($("bgT").value)||"#0b0e14";
+  const L1=lum(fh),L2=lum(bh);
+  const ratio=(Math.max(L1,L2)+0.05)/(Math.min(L1,L2)+0.05);
+  $("ratioBig").textContent=ratio.toFixed(2)+" : 1";
+  $("ratioBig").style.color=ratio>=4.5?"var(--grn)":ratio>=3?"var(--accent)":"var(--red)";
+  $("fgPrev").style.background=fh;$("fgPrev").style.color=fh;
+  $("fgPrev").querySelector(".hex").style.color=fh;$("fgHex").textContent=fh.toUpperCase();
+  $("bgPrev").style.background=bh;$("bgPrev").style.color=bh;
+  $("bgPrev").querySelector(".hex").style.color=bh;$("bgHex").textContent=bh.toUpperCase();
+  const tests=[["AA normal",4.5],["AA large",3],["AAA normal",7],["AAA large",4.5]];
+  $("badges").innerHTML=tests.map(([n,t])=>
+    `<span class="badge ${ratio>=t?"pass":"fail"}">${ratio>=t?"✓":"✗"} ${n}</span>`).join("");
+}
+function sync(from){
+  const other=from==="fg"?"bg":"fg";
+  const v=norm($(from+"T").value);
+  if(v){$(from).value=v;$(from+"T").value=v;}
+  render();
+}
+$("fg").addEventListener("input",e=>{$("fgT").value=e.target.value;render();});
+$("bg").addEventListener("input",e=>{$("bgT").value=e.target.value;render();});
+$("fgT").addEventListener("input",()=>sync("fg"));
+$("bgT").addEventListener("input",()=>sync("bg"));
+$("swapBtn").addEventListener("click",()=>{
+  const a=$("fgT").value;$("fgT").value=$("bgT").value;$("bgT").value=a;
+  $("fg").value=norm($("fgT").value)||"#ffffff";$("bg").value=norm($("bgT").value)||"#0b0e14";
+  render();
+});
+render();
+})();
+</script>
+</body>
+</html>

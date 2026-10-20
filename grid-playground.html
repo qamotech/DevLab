@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>CSS Grid Playground</title>
+<style>
+:root{--bg:#0b0e14;--panel:#121722;--line:#232c3d;--text:#e8edf5;--muted:#8b96ab;--accent:#34d399;color:var(--text);background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0}
+header{max-width:1280px;margin:auto;padding:26px 24px 18px}
+h1{font-size:22px;margin:0;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:13px;margin:6px 0 0}
+main{max-width:1280px;margin:auto;padding:0 24px 40px;display:grid;grid-template-columns:300px 1fr;gap:20px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.pad{padding:20px}
+h2{font-size:13px;margin:0 0 14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted)}
+.field{margin-bottom:16px}
+label{font-size:12px;font-weight:600;display:block;margin-bottom:8px}
+label output{color:var(--accent);font-family:ui-monospace,Consolas,monospace}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=text]{width:100%;background:#0e131d;border:1px solid var(--line);border-radius:8px;color:var(--text);padding:10px;font-family:ui-monospace,Consolas,monospace;font-size:12px}
+.hint{font-size:12px;color:var(--muted);line-height:1.6;margin-top:6px}
+#grid{border:1px dashed #3a4a63;border-radius:10px;background:#0d121c;min-height:380px;padding:14px;display:grid}
+.cell{background:#16202f;border:1px solid #2c3a52;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 13px ui-monospace,Consolas,monospace;color:#9fd8ff;min-height:64px}
+.codehead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.codehead h2{margin:0}
+button.copy{background:#1a2233;border:1px solid var(--line);color:var(--text);border-radius:7px;padding:7px 12px;font-size:12px;cursor:pointer}
+button.copy:hover{border-color:var(--accent)}
+pre{background:#0a0d13;border:1px solid var(--line);border-radius:8px;padding:14px;font:12.5px/1.7 ui-monospace,Consolas,monospace;white-space:pre-wrap;color:#c9d4e8;margin:0}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#123324;color:#6ce5bc;border:1px solid #2a5a48;padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.show{opacity:1}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>CSS Grid Playground</h1><p class="sub">Design grid layouts visually, copy the CSS.</p></header>
+<main>
+<aside class="panel"><div class="pad">
+<h2>Controls</h2>
+<div class="field"><label>Columns — <output id="colVal">3</output></label>
+<input type="range" id="cols" min="1" max="8" value="3"></div>
+<div class="field"><label>Rows — <output id="rowVal">3</output></label>
+<input type="range" id="rows" min="1" max="8" value="3"></div>
+<div class="field"><label>Gap — <output id="gapVal">12px</output></label>
+<input type="range" id="gap" min="0" max="48" value="12"></div>
+<div class="field"><label>Column template</label>
+<input type="text" id="colT" value="1fr 1fr 1fr" spellcheck="false">
+<p class="hint">Any valid grid-template-columns value, e.g. <code>200px 1fr</code> or <code>repeat(4, 1fr)</code>. Leave default to auto-generate from the slider.</p></div>
+<div class="field"><label>Row template</label>
+<input type="text" id="rowT" value="auto auto auto" spellcheck="false"></div>
+</div></aside>
+<section>
+<div class="panel"><div class="pad">
+<h2>Live preview</h2>
+<div id="grid"></div>
+</div></div>
+<div class="panel" style="margin-top:20px"><div class="pad">
+<div class="codehead"><h2>CSS</h2><button class="copy" id="copyBtn">Copy CSS</button></div>
+<pre id="cssOut"></pre>
+</div></div>
+</section>
+</main>
+<div id="toast">Copied!</div>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const grid=$("grid");
+function auto(n,unit){return Array(n).fill(unit).join(" ");}
+function render(){
+  const c=+$("cols").value,r=+$("rows").value,g=+$("gap").value;
+  $("colVal").textContent=c;$("rowVal").textContent=r;$("gapVal").textContent=g+"px";
+  let ct=$("colT").value.trim()||auto(c,"1fr");
+  let rt=$("rowT").value.trim()||auto(r,"auto");
+  grid.style.gridTemplateColumns=ct;
+  grid.style.gridTemplateRows=rt;
+  grid.style.gap=g+"px";
+  grid.innerHTML="";
+  for(let i=0;i<c*r;i++){
+    const d=document.createElement("div");
+    d.className="cell";d.textContent=i+1;
+    grid.appendChild(d);
+  }
+  $("cssOut").textContent=
+`.grid {\n  display: grid;\n  grid-template-columns: ${ct};\n  grid-template-rows: ${rt};\n  gap: ${g}px;\n}`;
+}
+["cols","rows","gap"].forEach(id=>$(id).addEventListener("input",render));
+["colT","rowT"].forEach(id=>$(id).addEventListener("input",render));
+$("cols").addEventListener("input",()=>{$("colT").value=auto(+$("cols").value,"1fr");});
+$("rows").addEventListener("input",()=>{$("rowT").value=auto(+$("rows").value,"auto");});
+$("copyBtn").addEventListener("click",async()=>{
+  try{await navigator.clipboard.writeText($("cssOut").textContent);
+    const t=$("toast");t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1500);}
+  catch(e){}
+});
+render();
+})();
+</script>
+</body>
+</html>

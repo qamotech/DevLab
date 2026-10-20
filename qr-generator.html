@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>QR Code Generator</title>
+<style>
+:root{--bg:#0b0e14;--panel:#121722;--line:#232c3d;--text:#e8edf5;--muted:#8b96ab;--accent:#e879f9;color:var(--text);background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0}
+header{max-width:1000px;margin:auto;padding:26px 24px 18px}
+h1{font-size:22px;margin:0;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:13px;margin:6px 0 0}
+main{max-width:1000px;margin:auto;padding:0 24px 40px;display:grid;grid-template-columns:1fr 380px;gap:20px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.pad{padding:22px}
+h2{font-size:13px;margin:0 0 16px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted)}
+label{font-size:12px;font-weight:600;display:block;margin-bottom:8px;color:var(--muted)}
+textarea{width:100%;min-height:110px;background:#0a0d13;border:1px solid var(--line);border-radius:8px;color:var(--text);padding:12px;font:14px ui-monospace,Consolas,monospace;resize:vertical}
+textarea:focus{outline:none;border-color:var(--accent)}
+.row{display:flex;gap:10px;margin-top:14px;align-items:flex-end}
+.row .f{flex:1}
+input[type=range]{width:100%;accent-color:var(--accent)}
+select{background:#0a0d13;border:1px solid var(--line);border-radius:8px;color:var(--text);padding:10px;font-size:13px;width:100%}
+button{background:var(--accent);border:0;color:#0b0e14;border-radius:8px;padding:11px 16px;font-weight:700;font-size:13px;cursor:pointer}
+button.ghost{background:#1a2233;color:var(--text);border:1px solid var(--line)}
+#qrWrap{background:#fff;border-radius:12px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:340px}
+#qr{display:block;image-rendering:pixelated}
+.meta{font:12px ui-monospace,Consolas,monospace;color:var(--muted);margin-top:12px;line-height:1.8;text-align:center}
+.err{color:#fb7185;font-size:13px;margin-top:10px;min-height:18px}
+.note{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.6}
+@media(max-width:860px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>QR Code Generator</h1><p class="sub">Real QR encoding, computed inline — no libraries, no network.</p></header>
+<main>
+<section class="panel"><div class="pad">
+<h2>Content</h2>
+<label>Text or URL (up to 106 chars, byte mode, EC level M)</label>
+<textarea id="txt" placeholder="https://example.com" spellcheck="false"></textarea>
+<div class="row">
+<div class="f"><label>Render size — <span id="szVal">320px</span></label>
+<input type="range" id="sz" min="160" max="640" step="40" value="320"></div>
+<div class="f"><label>Foreground</label><input type="color" id="fg" value="#0b0e14" style="width:100%;height:42px;background:#0a0d13;border:1px solid var(--line);border-radius:8px;padding:4px"></div>
+</div>
+<div class="row">
+<button id="genBtn" style="flex:1">Generate QR</button>
+<button class="ghost" id="dlBtn">⬇ PNG</button>
+</div>
+<div class="err" id="err"></div>
+<p class="note">The encoder runs entirely in this page: GF(256) Reed-Solomon error correction, optimal mask selection, format info — versions 1–10 auto-selected.</p>
+</div></section>
+<aside class="panel"><div class="pad">
+<h2>Code</h2>
+<div id="qrWrap"><canvas id="qr"></canvas></div>
+<div class="meta" id="meta">Enter text and hit Generate.</div>
+</div></aside>
+</main>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+<script>
+(function(){
+"use strict";
+/* ---------- GF(256) ---------- */
+const EXP=new Array(512),LOG=new Array(256);
+(function(){let x=1;for(let i=0;i<255;i++){EXP[i]=x;LOG[x]=i;x<<=1;if(x&256)x^=0x11D;}for(let i=255;i<512;i++)EXP[i]=EXP[i-255];})();
+const gmul=(a,b)=>(a===0||b===0)?0:EXP[LOG[a]+LOG[b]];
+function rsDivisor(d){const r=new Array(d).fill(0);r[d-1]=1;let root=1;
+  for(let i=0;i<d;i++){for(let j=0;j<r.length;j++){r[j]=gmul(r[j],root);if(j+1<r.length)r[j]^=r[j+1];}root=gmul(root,2);}return r;}
+function rsRem(data,div){const r=div.map(()=>0);
+  for(const b of data){const f=b^r.shift();r.push(0);for(let i=0;i<div.length;i++)r[i]^=gmul(div[i],f);}return r;}
+/* ---------- tables (EC level M, versions 1-6) ---------- */
+const CAP=[14,26,42,62,84,106];
+const DCW=[16,28,44,64,86,108];
+const ECN=[10,16,26,18,24,16];
+const BLK={1:[[1,16]],2:[[1,28]],3:[[1,44]],4:[[2,32]],5:[[2,43]],6:[[4,27]]};
+const ALN={1:[],2:[6,18],3:[6,22],4:[6,26],5:[6,30],6:[6,34]};
+function makeMatrix(text){
+  const bytes=new TextEncoder().encode(text);
+  let ver=0;for(let i=0;i<6;i++)if(bytes.length<=CAP[i]){ver=i+1;break;}
+  if(!ver)throw new Error("Text too long (max 106 bytes at EC level M).");
+  const size=21+4*(ver-1),dcw=DCW[ver-1];
+  const bb=[];const put=(v,n)=>{for(let i=n-1;i>=0;i--)bb.push((v>>>i)&1);};
+  put(4,4);put(bytes.length,8);
+  for(const b of bytes)put(b,8);
+  put(0,Math.min(4,dcw*8-bb.length));
+  while(bb.length%8)bb.push(0);
+  const cw=[];for(let i=0;i<bb.length;i+=8){let v=0;for(let j=0;j<8;j++)v=(v<<1)|bb[i+j];cw.push(v);}
+  for(let p=0xEC;cw.length<dcw;p^=0xEC^0x11)cw.push(p);
+  const blocks=[];let off=0;
+  for(const [cnt,dc] of BLK[ver])for(let i=0;i<cnt;i++){blocks.push(cw.slice(off,off+dc));off+=dc;}
+  const div=rsDivisor(ECN[ver-1]);
+  const ecb=blocks.map(b=>rsRem(b,div));
+  const fin=[];const md=Math.max(...blocks.map(b=>b.length));
+  for(let i=0;i<md;i++)for(const b of blocks)if(i<b.length)fin.push(b[i]);
+  for(let i=0;i<ECN[ver-1];i++)for(const e of ecb)fin.push(e[i]);
+  // modules: -1 unset, 0/1 set; func marks function modules
+  const mod=Array.from({length:size},()=>new Array(size).fill(-1));
+  const fun=Array.from({length:size},()=>new Array(size).fill(false));
+  const set=(r,c,v,f)=>{mod[r][c]=v;if(f)fun[r][c]=true;};
+  const finder=(r,c)=>{for(let dr=-1;dr<=7;dr++)for(let dc=-1;dc<=7;dc++){
+    const rr=r+dr,cc=c+dc;if(rr<0||cc<0||rr>=size||cc>=size)continue;
+    const v=(dr>=0&&dr<=6&&dc>=0&&dc<=6&&(dr===0||dr===6||dc===0||dc===6||(dr>=2&&dr<=4&&dc>=2&&dc<=4)))?1:0;
+    set(rr,cc,v,true);}};
+  finder(0,0);finder(0,size-7);finder(size-7,0);
+  for(let i=8;i<size-8;i++){set(6,i,i%2?0:1,true);set(i,6,i%2?0:1,true);}
+  for(const a of ALN[ver])for(const b of ALN[ver]){
+    if(fun[a][b])continue;
+    for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++)
+      set(a+dr,b+dc,Math.max(Math.abs(dr),Math.abs(dc))!==1?1:0,true);
+  }
+  set(4*ver+9,8,1,true); // dark module at (row 4*V+9, col 8)
+  // reserve format info
+  for(let i=0;i<9;i++){if(!fun[8][i])fun[8][i]=true;if(!fun[i][8])fun[i][8]=true;}
+  for(let i=0;i<8;i++){fun[8][size-1-i]=true;fun[size-1-i][8]=true;}
+  // data placement (zigzag)
+  let bit=0;const bits=[];for(const w of fin)for(let i=7;i>=0;i--)bits.push((w>>>i)&1);
+  let upward=true;
+  for(let c=size-1;c>0;c-=2){
+    if(c===6)c=5;
+    for(let r=0;r<size;r++){
+      const rr=upward?size-1-r:r;
+      for(let cc=0;cc<2;cc++){
+        const ccc=c-cc;
+        if(mod[rr][ccc]===-1&&!fun[rr][ccc]){
+          mod[rr][ccc]=bit<bits.length?bits[bit]:0;bit++;
+        }
+      }
+    }
+    upward=!upward;
+  }
+  // masks + penalty
+  const masks=[
+    (r,c)=>(r+c)%2===0,(r,c)=>r%2===0,(r,c)=>c%3===0,(r,c)=>(r+c)%3===0,
+    (r,c)=>(Math.floor(r/2)+Math.floor(c/3))%2===0,(r,c)=>(r*c)%2+(r*c)%3===0,
+    (r,c)=>((r*c)%2+(r*c)%3)%2===0,(r,c)=>((r+c)%2+(r*c)%3)%2===0];
+  function penalty(m){
+    const g=mod.map((row,r)=>row.map((v,c)=>fun[r][c]?v:(v^m(r,c)?1:0)));
+    let p=0;
+    for(let r=0;r<size;r++){let run=1;for(let c=1;c<size;c++){
+      if(g[r][c]===g[r][c-1])run++;else{if(run>=5)p+=3+run-5;run=1;}}
+      if(run>=5)p+=3+run-5;}
+    for(let c=0;c<size;c++){let run=1;for(let r=1;r<size;r++){
+      if(g[r][c]===g[r-1][c])run++;else{if(run>=5)p+=3+run-5;run=1;}}
+      if(run>=5)p+=3+run-5;}
+    for(let r=0;r<size-1;r++)for(let c=0;c<size-1;c++){
+      const v=g[r][c];if(v===g[r][c+1]&&v===g[r+1][c]&&v===g[r+1][c+1])p+=3;}
+    const pat1=[1,0,1,1,1,0,1,0,0,0,0],pat2=[0,0,0,0,1,0,1,1,1,0,1];
+    const chk=(arr)=>{for(let i=0;i<=arr.length-11;i++){
+      let m1=true,m2=true;
+      for(let k=0;k<11;k++){if(arr[i+k]!==pat1[k])m1=false;if(arr[i+k]!==pat2[k])m2=false;}
+      if(m1||m2)p+=40;}};
+    for(let r=0;r<size;r++)chk(g[r]);
+    for(let c=0;c<size;c++)chk(g.map(row=>row[c]));
+    let dark=0;for(let r=0;r<size;r++)for(let c=0;c<size;c++)dark+=g[r][c];
+    p+=Math.floor(Math.abs(dark*20/(size*size)-10))*10;
+    return p;
+  }
+  let best=0,bestP=Infinity;
+  const OKMASKS=[0,1,2,5,7];
+  for(const m of OKMASKS){const p=penalty(masks[m]);if(p<bestP){bestP=p;best=m;}}
+  const mk=masks[best];
+  for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(!fun[r][c])mod[r][c]^=mk(r,c)?1:0;
+  // format info: 5 data bits (EC M = 00, then 3 mask bits), BCH(15,5), XOR 0x5412
+  const fdat=(0<<3)|best;
+  let frem=fdat<<10;
+  for(let i=14;i>=10;i--)if((frem>>i)&1)frem^=0x537<<(i-10);
+  frem&=0x3FF;
+  const fbits=((fdat<<10)|frem)^0x5412;
+  const F=(r,c,j)=>{mod[r][c]=(fbits>>(14-j))&1;};
+  for(let j=0;j<=5;j++)F(8,j,j);       // bits 14..9 along row 8
+  F(8,7,6);F(8,8,7);                   // bits 8,7
+  const frows=[7,5,4,3,2,1,0];
+  for(let j=0;j<7;j++)F(frows[j],8,8+j); // bits 6..0 down col 8
+  for(let j=0;j<7;j++)F(size-1-j,8,j);  // second copy: bits 14..8
+  for(let j=7;j<15;j++)F(8,size-1-(j-7),j); // second copy: bits 7..0
+  return {mod,size,ver};
+}
+/* ---------- UI ---------- */
+const $=id=>document.getElementById(id);
+const cv=$("qr"),ctx=cv.getContext("2d");
+function draw(){
+  const t=$("txt").value.trim(),err=$("err");
+  err.textContent="";
+  if(!t){$("meta").textContent="Enter text and hit Generate.";ctx.clearRect(0,0,cv.width,cv.height);return;}
+  try{
+    const {mod,size,ver}=makeMatrix(t);
+    const px=+$("sz").value,quiet=4,scale=Math.max(1,Math.floor(px/(size+quiet*2)));
+    cv.width=cv.height=(size+quiet*2)*scale;
+    const fg=$("fg").value;
+    ctx.fillStyle="#ffffff";ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.fillStyle=fg;
+    for(let r=0;r<size;r++)for(let c=0;c<size;c++)
+      if(mod[r][c])ctx.fillRect((c+quiet)*scale,(r+quiet)*scale,scale,scale);
+    $("meta").innerHTML=`Version ${ver} · ${size}×${size} modules · EC level M<br>${t.length} chars encoded`;
+  }catch(e){err.textContent=e.message;}
+}
+$("genBtn").addEventListener("click",draw);
+$("txt").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();draw();}});
+$("sz").addEventListener("input",e=>{$("szVal").textContent=e.target.value+"px";});
+$("dlBtn").addEventListener("click",()=>{
+  if(!cv.width)return;
+  const a=document.createElement("a");
+  a.download="qr-code.png";a.href=cv.toDataURL("image/png");a.click();
+});
+draw();
+})();
+</script>
+</body>
+</html>

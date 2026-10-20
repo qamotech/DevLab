@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Meta Tag Generator</title>
+<style>
+:root{--bg:#0b0e14;--panel:#121722;--line:#232c3d;--text:#e8edf5;--muted:#8b96ab;--accent:#38bdf8;color:var(--text);background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0}
+header{max-width:1200px;margin:auto;padding:26px 24px 18px}
+h1{font-size:22px;margin:0;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:13px;margin:6px 0 0}
+main{max-width:1200px;margin:auto;padding:0 24px 40px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.pad{padding:22px}
+h2{font-size:13px;margin:0 0 16px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted)}
+.field{margin-bottom:14px}
+label{font-size:12px;font-weight:600;display:block;margin-bottom:7px;color:var(--muted)}
+input[type=text],textarea,select{width:100%;background:#0a0d13;border:1px solid var(--line);border-radius:8px;color:var(--text);padding:11px;font-size:13.5px}
+textarea{resize:vertical;min-height:70px;font-family:inherit}
+input:focus,textarea:focus{outline:none;border-color:var(--accent)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+pre{background:#0a0d13;border:1px solid var(--line);border-radius:8px;padding:16px;font:12px/1.8 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-all;color:#c9d4e8;margin:0;max-height:520px;overflow:auto}
+pre .t{color:#7cc7ff}
+.btnrow{display:flex;gap:8px;margin-top:14px}
+button{background:#1a2233;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:11px 16px;font-size:13px;font-weight:600;cursor:pointer;flex:1}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#0b0e14}
+.preview{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:14px;background:#0d121c}
+.preview .phead{padding:12px 14px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted);font-weight:600}
+.tweet{padding:14px;display:flex;gap:12px}
+.avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#38bdf8,#a78bfa);flex-shrink:0}
+.tweet .nm{font-weight:700;font-size:13.5px}.tweet .hd{color:var(--muted);font-size:12.5px}
+.tweet .tt{font-size:13.5px;margin:4px 0 10px;line-height:1.5}
+.cardimg{height:110px;border-radius:8px;background:linear-gradient(135deg,#0ea5e9,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;margin-bottom:8px}
+.cardmeta{border:1px solid var(--line);border-radius:0 0 8px 8px;padding:10px 12px;margin-top:-8px}
+.cardmeta .ct{font-weight:700;font-size:13px}.cardmeta .cd{color:var(--muted);font-size:12px;margin-top:3px}.cardmeta .cu{color:var(--muted);font-size:11.5px;margin-top:3px}
+.char{font-size:11px;color:var(--muted);margin-top:5px;font-family:ui-monospace,monospace}
+.char.warn{color:#fbbf24}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#123324;color:#6ce5bc;border:1px solid #2a5a48;padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.show{opacity:1}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>Meta Tag Generator</h1><p class="sub">SEO + Open Graph + Twitter Card tags, with live preview.</p></header>
+<main>
+<section class="panel"><div class="pad">
+<h2>Page info</h2>
+<div class="field"><label>Title <span class="char" id="cTitle"></span></label>
+<input type="text" id="inTitle" value="DevLab — Browser-Based Dev Tools" maxlength="120"></div>
+<div class="field"><label>Description <span class="char" id="cDesc"></span></label>
+<textarea id="inDesc">24 single-file developer tools that run entirely in your browser. No build step, no tracking.</textarea></div>
+<div class="row">
+<div class="field"><label>Canonical URL</label><input type="text" id="inUrl" value="https://qamotech.github.io/devlab/"></div>
+<div class="field"><label>Image URL (1200×630)</label><input type="text" id="inImg" value="https://qamotech.github.io/devlab/og.png"></div>
+</div>
+<div class="row">
+<div class="field"><label>Site name</label><input type="text" id="inSite" value="DevLab"></div>
+<div class="field"><label>Twitter handle</label><input type="text" id="inTw" value="@diamond_n8_clark"></div>
+</div>
+<div class="row">
+<div class="field"><label>Card type</label>
+<select id="inCard"><option value="summary_large_image">Summary large image</option><option value="summary">Summary</option></select></div>
+<div class="field"><label>Theme color</label><input type="text" id="inTheme" value="#0b0e14"></div>
+</div>
+<div class="field"><label>Author</label><input type="text" id="inAuthor" value="Nathan Clark"></div>
+</div></section>
+<section>
+<div class="panel"><div class="pad">
+<h2>Generated tags <button id="copyBtn" style="float:right;background:#1a2233;border:1px solid var(--line);color:var(--text);border-radius:7px;padding:7px 14px;font-size:12px;cursor:pointer;flex:none">Copy all</button></h2>
+<pre id="out"></pre>
+</div></div>
+<div class="panel" style="margin-top:20px"><div class="pad">
+<h2>Social preview</h2>
+<div class="preview"><div class="phead">𝕏 Twitter / X card preview</div>
+<div class="tweet"><div class="avatar"></div><div style="flex:1">
+<div class="nm">DevLab <span class="hd" id="pvHandle">@diamond_n8_clark · now</span></div>
+<div class="tt" id="pvDesc"></div>
+<div class="cardimg" id="pvImg">1200 × 630</div>
+<div class="cardmeta"><div class="ct" id="pvTitle"></div><div class="cd" id="pvDesc2"></div><div class="cu" id="pvUrl"></div></div>
+</div></div></div>
+</div></div>
+</section>
+</main>
+<div id="toast">Copied!</div>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+function render(){
+  const t=$("inTitle").value.trim(),d=$("inDesc").value.trim(),u=$("inUrl").value.trim(),
+        img=$("inImg").value.trim(),site=$("inSite").value.trim(),tw=$("inTw").value.trim(),
+        card=$("inCard").value,theme=$("inTheme").value.trim(),author=$("inAuthor").value.trim();
+  $("cTitle").textContent=t.length+"/60";$("cTitle").className="char"+(t.length>60?" warn":"");
+  $("cDesc").textContent=d.length+"/160";$("cDesc").className="char"+(d.length>160?" warn":"");
+  const tags=[
+    `<title>${esc(t)}</title>`,
+    `<meta name="description" content="${esc(d)}">`,
+    author?`<meta name="author" content="${esc(author)}">`:null,
+    `<link rel="canonical" href="${esc(u)}">`,
+    theme?`<meta name="theme-color" content="${esc(theme)}">`:null,
+    `<meta property="og:type" content="website">`,
+    site?`<meta property="og:site_name" content="${esc(site)}">`:null,
+    `<meta property="og:title" content="${esc(t)}">`,
+    `<meta property="og:description" content="${esc(d)}">`,
+    u?`<meta property="og:url" content="${esc(u)}">`:null,
+    img?`<meta property="og:image" content="${esc(img)}">`:null,
+    `<meta name="twitter:card" content="${card}">`,
+    `<meta name="twitter:title" content="${esc(t)}">`,
+    `<meta name="twitter:description" content="${esc(d)}">`,
+    img?`<meta name="twitter:image" content="${esc(img)}">`:null,
+    tw?`<meta name="twitter:site" content="${esc(tw)}">`:null
+  ].filter(Boolean);
+  $("out").innerHTML=tags.map(x=>esc(x).replace(/&lt;(\/?)(meta|title|link)/g,'<span class="t">&lt;$1$2</span>')).join("\n");
+  $("out").dataset.raw=tags.join("\n");
+  $("pvTitle").textContent=t;$("pvDesc").textContent=d;$("pvDesc2").textContent=d;
+  $("pvUrl").textContent=u.replace(/^https?:\/\//,"");$("pvHandle").textContent=tw+" · now";
+}
+["inTitle","inDesc","inUrl","inImg","inSite","inTw","inCard","inTheme","inAuthor"].forEach(id=>{
+  $(id).addEventListener("input",render);
+});
+$("copyBtn").addEventListener("click",async()=>{
+  try{await navigator.clipboard.writeText($("out").dataset.raw);
+    const t=$("toast");t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1500);}catch(e){}
+});
+render();
+})();
+</script>
+</body>
+</html>

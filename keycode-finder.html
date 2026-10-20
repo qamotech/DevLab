@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Keycode Finder</title>
+<style>
+:root{--bg:#0b0e14;--panel:#121722;--line:#232c3d;--text:#e8edf5;--muted:#8b96ab;--accent:#f472b6;color:var(--text);background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;flex-direction:column}
+header{max-width:900px;margin:auto;padding:26px 24px 10px;width:100%}
+h1{font-size:22px;margin:0;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:13px;margin:6px 0 0}
+main{max-width:900px;margin:auto;padding:10px 24px 40px;width:100%;flex:1}
+.hero{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:44px 20px;text-align:center;margin-bottom:20px}
+#bigKey{font:700 64px/1 ui-monospace,Consolas,monospace;color:var(--accent);min-height:80px}
+#bigHint{color:var(--muted);font-size:13px;margin-top:12px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center}
+.card .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.card .v{font:600 20px ui-monospace,Consolas,monospace;word-break:break-all}
+.mods{display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap}
+.mod{background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:9px 20px;font-size:13px;font-weight:600}
+.mod.on{background:var(--accent);border-color:var(--accent);color:#0b0e14}
+.hist{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+.hist h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:0 0 12px}
+#histList{display:flex;gap:8px;flex-wrap:wrap;min-height:36px}
+.chip{background:#0d121c;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font:600 13px ui-monospace,Consolas,monospace}
+.chip small{color:var(--muted);font-weight:400}
+.note{font-size:12px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.6}
+@media(max-width:700px){.cards{grid-template-columns:repeat(2,1fr)}#bigKey{font-size:44px}}
+</style>
+</head>
+<body>
+<header><h1>Keycode Finder</h1><p class="sub">Press any key to inspect it.</p></header>
+<main>
+<div class="hero">
+<div id="bigKey">—</div>
+<div id="bigHint">Click here, then press any key</div>
+</div>
+<div class="cards">
+<div class="card"><div class="k">event.key</div><div class="v" id="vKey">—</div></div>
+<div class="card"><div class="k">event.code</div><div class="v" id="vCode">—</div></div>
+<div class="card"><div class="k">keyCode (legacy)</div><div class="v" id="vKeyCode">—</div></div>
+<div class="card"><div class="k">which (legacy)</div><div class="v" id="vWhich">—</div></div>
+</div>
+<div class="mods">
+<span class="mod" id="mShift">Shift</span>
+<span class="mod" id="mCtrl">Ctrl</span>
+<span class="mod" id="mAlt">Alt</span>
+<span class="mod" id="mMeta">Meta ⌘⊞</span>
+</div>
+<div class="hist"><h3>History</h3><div id="histList"><span style="color:var(--muted);font-size:13px">Nothing pressed yet.</span></div></div>
+<p class="note">Tip: <kbd>event.code</kbd> is layout-independent (physical key), <kbd>event.key</kbd> is the character produced. <kbd>keyCode</kbd>/<kbd>which</kbd> are deprecated but still widely used.</p>
+</main>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const hist=[];
+function showKey(k){return k===" "?"Space":k===""?"(empty)":k;}
+window.addEventListener("keydown",e=>{
+  e.preventDefault();
+  $("bigKey").textContent=showKey(e.key);
+  $("bigHint").textContent="location: "+["standard","left","right","numpad"][e.location||0];
+  $("vKey").textContent=showKey(e.key);
+  $("vCode").textContent=e.code||"—";
+  $("vKeyCode").textContent=e.keyCode;
+  $("vWhich").textContent=e.which;
+  $("mShift").classList.toggle("on",e.shiftKey);
+  $("mCtrl").classList.toggle("on",e.ctrlKey);
+  $("mAlt").classList.toggle("on",e.altKey);
+  $("mMeta").classList.toggle("on",e.metaKey);
+  hist.unshift({key:showKey(e.key),code:e.code});
+  if(hist.length>12)hist.pop();
+  $("histList").innerHTML=hist.map(h=>`<span class="chip">${h.key} <small>${h.code}</small></span>`).join("");
+});
+window.addEventListener("keyup",e=>{
+  $("mShift").classList.toggle("on",e.shiftKey);
+  $("mCtrl").classList.toggle("on",e.ctrlKey);
+  $("mAlt").classList.toggle("on",e.altKey);
+  $("mMeta").classList.toggle("on",e.metaKey);
+});
+$("bigKey").parentElement.setAttribute("tabindex","0");
+window.focus();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>CSS Gradient Generator</title>
+<style>
+:root{--bg:#0b0e14;--panel:#121722;--line:#232c3d;--text:#e8edf5;--muted:#8b96ab;--accent:#f472b6;--accent2:#a78bfa;color:var(--text);background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0}
+header{max-width:1200px;margin:auto;padding:26px 24px 18px;display:flex;align-items:center;justify-content:space-between}
+h1{font-size:22px;margin:0;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:13px;margin:6px 0 0}
+main{max-width:1200px;margin:auto;padding:0 24px 40px;display:grid;grid-template-columns:1fr 340px;gap:20px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.pad{padding:20px}
+h2{font-size:13px;margin:0 0 14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted)}
+#preview{height:340px;border-radius:10px;border:1px solid var(--line);position:relative;overflow:hidden}
+#stopbar{position:relative;height:44px;margin-top:18px;background:#0e131d;border:1px solid var(--line);border-radius:8px;cursor:crosshair}
+.stop{position:absolute;top:-6px;width:20px;height:56px;margin-left:-10px;cursor:grab;border-radius:5px;border:2px solid #fff;box-shadow:0 2px 8px #0009}
+.stop.active{outline:2px solid var(--accent);outline-offset:2px;z-index:2}
+.field{margin-bottom:16px}
+label{font-size:12px;font-weight:600;display:block;margin-bottom:8px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=color]{width:100%;height:40px;border:1px solid var(--line);border-radius:8px;background:#0e131d;padding:4px;cursor:pointer}
+input[type=number],select{width:100%;background:#0e131d;border:1px solid var(--line);border-radius:8px;color:var(--text);padding:10px}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;background:#0e131d;border:0;color:var(--muted);padding:10px;font-size:12px;font-weight:600}
+.seg button.on{background:var(--accent);color:#0b0e14}
+.btn{background:var(--accent);color:#0b0e14;border:0;border-radius:8px;padding:11px 14px;font-weight:700;font-size:13px;cursor:pointer;width:100%}
+.btn.ghost{background:#1a2233;color:var(--text);border:1px solid var(--line);margin-top:8px}
+pre{background:#0a0d13;border:1px solid var(--line);border-radius:8px;padding:14px;font:12.5px/1.7 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-all;color:#c9d4e8;margin:0}
+.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#123324;color:#6ce5bc;border:1px solid #2a5a48;padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.show{opacity:1}
+@media(max-width:860px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+<div><h1>CSS Gradient Generator</h1><p class="sub">Build beautiful gradients visually, copy the CSS.</p></div>
+</header>
+<main>
+<section class="panel"><div class="pad">
+<h2>Preview</h2>
+<div id="preview"></div>
+<div id="stopbar" title="Click to add a stop · drag to move · double-click to remove"></div>
+<p class="hint">Click the bar to add a color stop. Drag stops to reposition. Double-click a stop to remove it (minimum 2). Click a stop to edit its color below.</p>
+</div></section>
+<aside class="panel"><div class="pad">
+<h2>Controls</h2>
+<div class="field"><label>Type</label>
+<div class="seg" id="typeSeg"><button data-v="linear" class="on">Linear</button><button data-v="radial">Radial</button></div></div>
+<div class="field" id="angleField"><label>Angle — <span id="angleVal">135°</span></label>
+<input type="range" id="angle" min="0" max="360" value="135"></div>
+<div class="field"><label>Selected stop color</label>
+<input type="color" id="stopColor" value="#f472b6"></div>
+<div class="field"><label>Selected stop position — <span id="posVal">0%</span></label>
+<input type="range" id="stopPos" min="0" max="100" value="0"></div>
+<div class="field"><label>CSS output</label><pre id="cssOut"></pre></div>
+<button class="btn" id="copyBtn">Copy CSS</button>
+<button class="btn ghost" id="randomBtn">🎲 Random gradient</button>
+</div></aside>
+</main>
+<div id="toast">Copied!</div>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const preview=$("preview"),bar=$("stopbar");
+let stops=[{pos:0,color:"#f472b6"},{pos:100,color:"#a78bfa"}];
+let active=0,type="linear",angle=135;
+const rndC=()=>"#" +Math.floor(Math.random()*16777215).toString(16).padStart(6,"0");
+function render(){
+  stops.sort((a,b)=>a.pos-b.pos);
+  const css=type==="linear"
+    ?`linear-gradient(${angle}deg, ${stops.map(s=>`${s.color} ${s.pos}%`).join(", ")})`
+    :`radial-gradient(circle, ${stops.map(s=>`${s.color} ${s.pos}%`).join(", ")})`;
+  preview.style.background=css;
+  bar.style.background=css;
+  $("cssOut").textContent=`background: ${css};`;
+  bar.querySelectorAll(".stop").forEach(e=>e.remove());
+  stops.forEach((s,i)=>{
+    const d=document.createElement("div");
+    d.className="stop"+(i===active?" active":"");
+    d.style.left=s.pos+"%";d.style.background=s.color;
+    d.title=`${s.color} at ${s.pos}%`;
+    d.addEventListener("pointerdown",ev=>{
+      ev.stopPropagation();active=i;syncEditors();render();
+      const move=e2=>{
+        const r=bar.getBoundingClientRect();
+        let p=Math.round((e2.clientX-r.left)/r.width*100);
+        stops[i].pos=Math.max(0,Math.min(100,p));syncEditors();render();
+      };
+      const up=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",up);};
+      window.addEventListener("pointermove",move);window.addEventListener("pointerup",up);
+    });
+    d.addEventListener("dblclick",ev=>{
+      ev.stopPropagation();
+      if(stops.length<=2){toast("Need at least 2 stops");return;}
+      stops.splice(i,1);active=Math.max(0,i-1);syncEditors();render();
+    });
+    bar.appendChild(d);
+  });
+}
+function syncEditors(){
+  const s=stops[active]||stops[0];
+  $("stopColor").value=s.color;$("stopPos").value=s.pos;$("posVal").textContent=s.pos+"%";
+}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),1600);}
+bar.addEventListener("click",e=>{
+  if(e.target.classList.contains("stop"))return;
+  const r=bar.getBoundingClientRect();
+  const p=Math.round((e.clientX-r.left)/r.width*100);
+  stops.push({pos:p,color:rndC()});active=stops.length-1;syncEditors();render();
+});
+$("stopColor").addEventListener("input",e=>{stops[active].color=e.target.value;render();});
+$("stopPos").addEventListener("input",e=>{stops[active].pos=+e.target.value;$("posVal").textContent=e.target.value+"%";render();});
+$("angle").addEventListener("input",e=>{angle=+e.target.value;$("angleVal").textContent=angle+"°";render();});
+$("typeSeg").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  type=b.dataset.v;
+  $("typeSeg").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+  $("angleField").style.display=type==="linear"?"":"none";
+  render();
+});
+$("copyBtn").addEventListener("click",async()=>{
+  try{await navigator.clipboard.writeText($("cssOut").textContent);toast("CSS copied to clipboard");}
+  catch(e){toast("Copy failed — select the CSS manually");}
+});
+$("randomBtn").addEventListener("click",()=>{
+  const n=2+Math.floor(Math.random()*3);
+  stops=[];for(let i=0;i<n;i++)stops.push({pos:Math.round(i/(n-1)*100),color:rndC()});
+  angle=Math.floor(Math.random()*360);$("angle").value=angle;$("angleVal").textContent=angle+"°";
+  active=0;syncEditors();render();
+});
+syncEditors();render();
+})();
+</script>
+</body>
+</html>

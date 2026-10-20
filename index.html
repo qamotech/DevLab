@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>DevLab — Browser-Based Dev Tools</title>
+<style>
+:root{--bg:#0b0e14;--panel:#121722;--line:#232c3d;--text:#e8edf5;--muted:#8b96ab;--accent:#0ea5e9;
+color:var(--text);background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0}
+header{max-width:1200px;margin:auto;padding:40px 24px 24px;text-align:center}
+h1{font-size:36px;margin:0;letter-spacing:-1px}
+h1 .grad{background:linear-gradient(135deg,#0ea5e9,#a78bfa,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--muted);font-size:15px;margin:12px auto 0;max-width:600px;line-height:1.6}
+.stats{display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 18px;font-size:13px;color:var(--muted)}
+.stat b{color:var(--accent)}
+main{max-width:1200px;margin:auto;padding:0 24px 60px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;text-decoration:none;color:var(--text);transition:transform .15s,border-color .15s;display:block}
+.card:hover{transform:translateY(-3px);border-color:var(--accent)}
+.card-title{font-weight:700;font-size:15px;margin-bottom:8px}
+.card-desc{color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:12px}
+.card-meta{font-size:11px;color:var(--muted);opacity:.7}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:0 24px 40px}
+</style>
+</head>
+<body>
+<header>
+<h1><span class="grad">DevLab</span></h1>
+<p class="sub">24 single-file developer tools. Each runs entirely in your browser — no build step, no server, no tracking. Click any card to launch the tool.</p>
+<div class="stats"><span class="stat"><b>24</b> tools</span><span class="stat"><b>100%</b> offline</span><span class="stat"><b>0</b> dependencies</span></div>
+</header>
+<main><div class="grid">
+<a class="card" href="json-formatter.html">
+      <div class="card-title">JSON Formatter &amp; Validator</div>
+      <div class="card-desc">Paste raw JSON, get pretty-printed output with syntax highlighting, validation errors pinpointed by line, plus minify and copy buttons.</div>
+      <div class="card-meta">Built by ChatGPT</div>
+    </a>
+<a class="card" href="regex-tester.html">
+      <div class="card-title">Regex Tester</div>
+      <div class="card-desc">Live regex testing against sample text with match highlighting, group capture display, and flags toggles (g/i/m/s).</div>
+      <div class="card-meta">Built by Perplexity</div>
+    </a>
+<a class="card" href="color-palette-generator.html">
+      <div class="card-title">Color Palette Generator</div>
+      <div class="card-desc">Generate harmonious color palettes (complementary, analogous, triadic), click to copy hex codes, lock colors you like.</div>
+      <div class="card-meta">Built by N8 (manual completion)</div>
+    </a>
+<a class="card" href="gradient-generator.html">
+      <div class="card-title">CSS Gradient Generator</div>
+      <div class="card-desc">Visual gradient builder with draggable color stops, angle control, and one-click copy of the CSS.</div>
+      <div class="card-meta">Built by N8 (manual completion)</div>
+    </a>
+<a class="card" href="markdown-previewer.html">
+      <div class="card-title">Markdown Previewer</div>
+      <div class="card-desc">Split-pane markdown editor with live rendered preview, no libraries — write a small parser inline.</div>
+      <div class="card-meta">Built by Gemini</div>
+    </a>
+<a class="card" href="base64-tool.html">
+      <div class="card-title">Base64 Encoder / Decoder</div>
+      <div class="card-desc">Encode text to base64 and decode it back, with file-to-base64 via drag and drop.</div>
+      <div class="card-meta">Built by Perplexity</div>
+    </a>
+<a class="card" href="cron-explainer.html">
+      <div class="card-title">Cron Expression Explainer</div>
+      <div class="card-desc">Type a cron expression, get a plain-English schedule description plus next 5 run times.</div>
+      <div class="card-meta">Built by ChatGPT</div>
+    </a>
+<a class="card" href="lorem-generator.html">
+      <div class="card-title">Lorem Ipsum Generator</div>
+      <div class="card-desc">Generate placeholder text by paragraphs, words, or sentences with copy button.</div>
+      <div class="card-meta">Built by Perplexity</div>
+    </a>
+<a class="card" href="shadow-generator.html">
+      <div class="card-title">Box-Shadow Generator</div>
+      <div class="card-desc">Sliders for offset, blur, spread, color, and inset toggle with live preview and CSS output.</div>
+      <div class="card-meta">Built by ChatGPT</div>
+    </a>
+<a class="card" href="url-codec.html">
+      <div class="card-title">URL Encoder / Decoder</div>
+      <div class="card-desc">Encode and decode URLs and query strings, with per-component breakdown.</div>
+      <div class="card-meta">Built by Perplexity</div>
+    </a>
+<a class="card" href="text-counter.html">
+      <div class="card-title">Word &amp; Character Counter</div>
+      <div class="card-desc">Live counts of characters, words, sentences, reading time as you type.</div>
+      <div class="card-meta">Built by ChatGPT</div>
+    </a>
+<a class="card" href="password-generator.html">
+      <div class="card-title">Password Generator</div>
+      <div class="card-desc">Customizable length, character sets, memorable-word mode, strength meter.</div>
+      <div class="card-meta">Built by Gemini</div>
+    </a>
+<a class="card" href="flexbox-playground.html">
+      <div class="card-title">Flexbox Playground</div>
+      <div class="card-desc">Interactive flex container with controls for direction, justify, align, gap — live boxes respond.</div>
+      <div class="card-meta">Built by Perplexity</div>
+    </a>
+<a class="card" href="grid-playground.html">
+      <div class="card-title">CSS Grid Playground</div>
+      <div class="card-desc">Build grid layouts visually: columns, rows, gap controls with live preview and CSS output.</div>
+      <div class="card-meta">Built by N8 (manual completion)</div>
+    </a>
+<a class="card" href="status-codes.html">
+      <div class="card-title">HTTP Status Code Lookup</div>
+      <div class="card-desc">Searchable reference of HTTP status codes with categories and plain-English meanings.</div>
+      <div class="card-meta">Built by N8 (manual completion)</div>
+    </a>
+<a class="card" href="jwt-decoder.html">
+      <div class="card-title">JWT Decoder</div>
+      <div class="card-desc">Paste a JWT, see decoded header and payload with pretty JSON, signature presence check.</div>
+      <div class="card-meta">Built by N8 (manual completion)</div>
+    </a>
+<a class="card" href="easing-visualizer.html">
+      <div class="card-title">Easing Function Visualizer</div>
+      <div class="card-desc">Animated demos of CSS easing functions with cubic-bezier curve graphs.</div>
+      <div class="card-meta">Built by N8 (manual completion)</div>
+    </a>
+<a class="card" href="contrast-checker.html">
+      <div class="card-title">Contrast Checker (WCAG)</div>
+      <div class="card-desc">Pick foreground/background colors, get contrast ratio and AA/AAA pass/fail.</div>
+      <div class="card-meta">Built by N8 (manual completion)</div>
+    </a>
+<a class="card" href="timestamp-converter.html">
+      <div class="card-title">Timestamp Converter</div>
+      <div class="card-desc">Convert between Unix timestamps, ISO strings, and human dates, both directions.</div>
+      <div class="card-meta">Built by N8 (manual completion)</div>
+    </a>
+<a class="card" href="clamp-calculator.html">
+      <div class="card-title">CSS clamp() Calculator</div>
+      <div class="card-desc">Input min/max sizes and viewport range, get fluid clamp() values with preview.</div>
+      <div class="card-meta">Built by N8 (manual completion)</div>
+    </a>
+<a class="card" href="qr-generator.html">
+      <div class="card-title">QR Code Generator</div>
+      <div class="card-desc">Type text or a URL, get a scannable QR code rendered on canvas (implement QR encoding inline, no external libs).</div>
+      <div class="card-meta">Built by N8 (manual completion)</div>
+    </a>
+<a class="card" href="meta-tag-generator.html">
+      <div class="card-title">Meta Tag Generator</div>
+      <div class="card-desc">Fill in title, description, image URL — get full SEO + Open Graph + Twitter card tags.</div>
+      <div class="card-meta">Built by N8 (manual completion)</div>
+    </a>
+<a class="card" href="unit-converter.html">
+      <div class="card-title">Dev Unit Converter</div>
+      <div class="card-desc">Convert px/rem/em/pt, plus hex/rgb/hsl color conversion in one tool.</div>
+      <div class="card-meta">Built by N8 (manual completion)</div>
+    </a>
+<a class="card" href="keycode-finder.html">
+      <div class="card-title">Keycode Finder</div>
+      <div class="card-desc">Press any key to see its key, code, keyCode, and which modifier keys are held.</div>
+      <div class="card-meta">Built by N8 (manual completion)</div>
+    </a>
+</div></main>
+<footer>Built by the AI Web App Lab · Completed October 2026</footer>
+</body>
+</html>

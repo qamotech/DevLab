@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Base64 Lab — Encoder / Decoder</title>
+<style>
+:root{--bg:#0b0e14;--panel:#121722;--field:#0c111a;--border:#252d3d;--text:#edf1fa;--muted:#8e9bb0;--accent:#98f0bd;--danger:#ff9aab;--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.4}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.app{max-width:1160px;margin:auto;padding:48px 28px 24px}
+header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:36px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:48px;height:48px;display:grid;place-items:center;background:#192c27;border:1px solid #325847;border-radius:14px;color:var(--accent);font:700 19px ui-monospace,monospace}
+h1{font-size:25px;letter-spacing:-1px;margin:0;font-weight:650}
+.subtitle{margin:2px 0 0;color:var(--muted);font-size:13px}
+.local{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px #98f0bd40}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.tabs{display:flex;padding:5px;background:var(--panel);border:1px solid var(--border);border-radius:12px;gap:4px}
+.tab{background:none;border:0;border-radius:8px;padding:9px 22px;color:var(--muted);font-weight:600}
+.tab[aria-selected="true"]{background:var(--accent);color:#10281b}
+.description{color:var(--muted);font-size:13px;margin:0}
+.workspace{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;min-width:0}
+.panel-head{height:62px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 20px;border-bottom:1px solid var(--border)}
+.panel-title{display:flex;align-items:center;gap:10px;font-weight:600}
+.tag{font:10px ui-monospace,SFMono-Regular,Consolas,monospace;padding:3px 7px;border:1px solid var(--border);color:var(--muted);border-radius:5px;letter-spacing:.6px}
+.small-btn{border:0;background:transparent;color:var(--muted);font-size:12px;padding:6px 8px;border-radius:6px}
+.small-btn:hover:not(:disabled){background:#ffffff09;color:var(--text)}
+.editor{width:100%;height:310px;display:block;resize:vertical;border:0;background:var(--field);color:var(--text);padding:20px;font:13px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;tab-size:2;overflow-wrap:anywhere;min-height:180px}
+.editor::placeholder{color:#526078}
+.editor:focus-visible{outline-offset:-2px}
+.panel-foot{min-height:44px;border-top:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--muted);font:11px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}
+.file-bar{display:none;align-items:center;justify-content:space-between;gap:12px;background:#15271f;padding:10px 18px;border-bottom:1px solid #294535;font-size:12px;color:var(--accent)}
+.file-bar.visible{display:flex}
+.file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.actions{display:flex;align-items:center;gap:10px;margin-top:18px;flex-wrap:wrap}
+.btn{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:10px;padding:11px 18px;font-weight:550;font-size:13px;transition:background .15s,transform .15s}
+.btn:hover:not(:disabled){background:#202938}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.primary{background:var(--accent);border-color:var(--accent);color:#10281b;min-width:168px}
+.primary:hover:not(:disabled){background:#b3f7cf}
+.shortcut{margin-left:auto;color:var(--muted);font-size:11px}
+kbd{border:1px solid var(--border);border-radius:4px;padding:2px 5px;font:11px ui-monospace,monospace}
+.dropzone{margin-top:26px;padding:27px 20px;border:1px dashed #364155;border-radius:var(--radius);text-align:center;background:#10151e;transition:border-color .15s,background .15s}
+.dropzone.dragging{border-color:var(--accent);background:#172c23}
+.upload-icon{width:36px;height:36px;margin:0 auto 10px;border:1px solid #324138;border-radius:10px;color:var(--accent);display:grid;place-items:center;font-size:22px}
+.dropzone p{margin:0 0 4px;color:#c0cad9}
+.dropzone .hint{color:var(--muted);font-size:12px}
+.link{color:var(--accent);background:none;border:0;padding:0;text-decoration:underline;text-underline-offset:3px}
+.options{margin-top:13px;display:flex;gap:20px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+.options label{display:flex;gap:7px;align-items:center;cursor:pointer}
+input[type="checkbox"]{accent-color:var(--accent);width:14px;height:14px;margin:0}
+.status{min-height:30px;margin-top:14px;font-size:12px;color:var(--muted)}
+.status.error{color:var(--danger)}
+.status.success{color:var(--accent)}
+footer{display:flex;justify-content:space-between;gap:14px;margin-top:24px;padding-top:18px;border-top:1px solid var(--border);color:#68778e;font-size:11px}
+.hidden{display:none!important}
+@media(max-width:720px){.app{padding:26px 16px 20px}header{margin-bottom:26px;align-items:flex-start}.local{font-size:0;margin-top:14px}.workspace{grid-template-columns:1fr}.editor{height:230px}.description{width:100%}.shortcut{display:none}.actions .btn{flex:1;padding:11px 12px}.primary{min-width:140px}h1{font-size:23px}footer{flex-direction:column;gap:3px}.panel-head{padding:0 16px}.tab{padding:8px 20px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+<header>
+<div class="brand">
+<div class="logo" aria-hidden="true">64</div>
+<div><h1>Base64 Lab</h1><p class="subtitle">A little utility for your everyday bytes.</p></div>
+</div>
+<div class="local"><span class="dot"></span>100% local · No uploads</div>
+</header>
+
+<div class="toolbar">
+<div class="tabs" role="tablist" aria-label="Conversion mode">
+<button class="tab" id="encodeTab" type="button" role="tab" aria-selected="true" aria-controls="workspace">Encode</button>
+<button class="tab" id="decodeTab" type="button" role="tab" aria-selected="false" aria-controls="workspace" tabindex="-1">Decode</button>
+</div>
+<p class="description" id="description">Plain text → Base64. Unicode included.</p>
+</div>
+
+<div class="workspace" id="workspace" role="tabpanel" aria-labelledby="encodeTab">
+<section class="panel" aria-label="Input">
+<div class="panel-head">
+<div class="panel-title"><label for="input">Input</label><span class="tag" id="inputType">TEXT</span></div>
+<button class="small-btn" id="clear" type="button">Clear all</button>
+</div>
+<div class="file-bar" id="fileBar"><span class="file-name" id="fileName"></span><button class="small-btn" type="button" id="removeFile" aria-label="Remove selected file">Remove ×</button></div>
+<textarea class="editor" id="input" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Input text" placeholder="Type or paste your text here…"></textarea>
+<div class="panel-foot"><span id="inputStats">0 characters · 0 bytes</span><span id="inputEncoding">UTF-8</span></div>
+</section>
+
+<section class="panel" aria-label="Output">
+<div class="panel-head">
+<div class="panel-title"><label for="output">Output</label><span class="tag" id="outputType">BASE64</span></div>
+<button class="small-btn" id="copy" type="button" disabled>Copy</button>
+</div>
+<textarea class="editor" id="output" readonly spellcheck="false" aria-label="Conversion output" placeholder="Your encoded result will appear here…"></textarea>
+<div class="panel-foot"><span id="outputStats">0 characters</span><span id="outputEncoding">RFC 4648</span></div>
+</section>
+</div>
+
+<div class="actions">
+<button class="btn primary" id="convert" type="button">Encode to Base64 →</button>
+<button class="btn" id="swap" type="button" disabled>⇄ Swap</button>
+<button class="btn" id="download" type="button" disabled>↓ Download</button>
+<span class="shortcut"><kbd>Ctrl</kbd> / <kbd>⌘</kbd> + <kbd>Enter</kbd> to run</span>
+</div>
+
+<div class="options" id="encodeOptions">
+<label><input id="urlSafe" type="checkbox">URL-safe alphabet</label>
+<label><input id="dataUrl" type="checkbox">Include data URL prefix</label>
+</div>
+
+<div class="dropzone" id="dropzone">
+<div class="upload-icon" aria-hidden="true">↥</div>
+<p>Drop a file here, or <button class="link" type="button" id="browse">browse files</button></p>
+<div class="hint" id="dropHint">Any file type · Up to 25 MiB · Converted locally</div>
+<input class="hidden" id="fileInput" type="file" aria-label="Choose a file to encode">
+</div>
+
+<div class="status" id="status" role="status" aria-live="polite">Ready when you are.</div>
+<footer><span>UTF-8 text · Binary files · URL-safe Base64</span><span>Private by design. Nothing leaves this browser.</span></footer>
+</main>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const encoder = new TextEncoder();
+const MAX_FILE = 25 * 1024 * 1024;
+let mode = 'encode';
+let selectedFile = null;
+let fileBytes = null;
+let resultBytes = null;
+let resultMime = 'application/octet-stream';
+let resultName = 'decoded.bin';
+let binaryResult = false;
+let revision = 0;
+let busy = false;
+
+function status(message, kind = '') {
+$('status').textContent = message;
+$('status').className = 'status' + (kind ? ' ' + kind : '');
+}
+function size(n) {
+if (n < 1024) return n + ' B';
+if (n < 1048576) return (n / 1024).toFixed(1) + ' KiB';
+return (n / 1048576).toFixed(2) + ' MiB';
+}
+function invalidate() {
+revision++;
+resultBytes = null;
+binaryResult = false;
+$('output').value = '';
+$('outputStats').textContent = '0 characters';
+$('outputEncoding').textContent = mode === 'encode' ? 'RFC 4648' : 'UTF-8';
+$('copy').disabled = $('download').disabled = $('swap').disabled = true;
+}
+function updateStats() {
+const text = $('input').value;
+$('inputStats').textContent = selectedFile
+? size(selectedFile.size) + ' · file input'
+: text.length.toLocaleString() + ' characters · ' + size(encoder.encode(text).length);
+}
+function clearFile() {
+selectedFile = null;
+fileBytes = null;
+$('fileBar').classList.remove('visible');
+$('input').readOnly = false;
+$('fileInput').value = '';
+$('inputType').textContent = mode === 'encode' ? 'TEXT' : 'BASE64';
+$('inputEncoding').textContent = mode === 'encode' ? 'UTF-8' : 'AUTO';
+}
+function setMode(next) {
+if (next === mode) return;
+mode = next;
+clearFile();
+invalidate();
+const encoding = mode === 'encode';
+['encode','decode'].forEach(value => {
+const tab = $(value + 'Tab');
+tab.setAttribute('aria-selected', String(value === mode));
+tab.tabIndex = value === mode ? 0 : -1;
+});
+$('workspace').setAttribute('aria-labelledby', mode + 'Tab');
+$('inputType').textContent = encoding ? 'TEXT' : 'BASE64';
+$('outputType').textContent = encoding ? 'BASE64' : 'TEXT';
+$('description').textContent = encoding ? 'Plain text → Base64. Unicode included.' : 'Base64 → original text or downloadable bytes.';
+$('input').placeholder = encoding ? 'Type or paste your text here…' : 'Paste Base64 or a data URL here…';
+$('output').placeholder = encoding ? 'Your encoded result will appear here…' : 'Your decoded result will appear here…';
+$('convert').textContent = encoding ? 'Encode to Base64 →' : 'Decode from Base64 →';
+$('encodeOptions').classList.toggle('hidden', !encoding);
+$('dropzone').classList.toggle('hidden', !encoding);
+updateStats();
+status('Ready when you are.');
+}
+function encodeBytes(bytes) {
+const chunks = [];
+for (let i = 0; i < bytes.length; i += 32768) {
+chunks.push(String.fromCharCode(...bytes.subarray(i, i + 32768)));
+} return btoa(chunks.join(''));
+}
+function decodeBase64(value) {
+let text = value.trim();
+let mime = 'application/octet-stream';
+if (/^data:/i.test(text)) {
+const comma = text.indexOf(',');
+if (comma < 0 || !/;base64$/i.test(text.slice(0, comma))) {
+throw new Error('This data URL is not Base64-encoded.');
+}
+const header = text.slice(5, comma);
+mime = (header.split(';')[0] || '').trim() || 'text/plain';
+text = text.slice(comma + 1);
+} text = text.replace(/\s/g, '');
+if (/[+/]/.test(text) && /[-_]/.test(text)) {
+throw new Error('Mixed standard and URL-safe alphabets. Use one alphabet consistently.');
+} text = text.replace(/-/g, '+').replace(/_/g, '/');
+if (!/^[A-Za-z0-9+/]*={0,2}$/.test(text)) {
+throw new Error('Invalid Base64: only letters, digits, + / (or - _), and trailing = are allowed.');
+} const unpadded = text.replace(/=+$/, '');
+const remainder = unpadded.length % 4;
+if (remainder === 1 || (text.includes('=') && text.length % 4 !== 0)) {
+throw new Error('Invalid Base64 length or padding. Check for missing or extra characters.');
+} const normalized = unpadded + '='.repeat((4 - remainder) % 4);
+const raw = atob(normalized);
+const bytes = Uint8Array.from(raw, char => char.charCodeAt(0));
+if (encodeBytes(bytes).replace(/=+$/, '') !== unpadded) {
+throw new Error('Invalid Base64: nonzero padding bits. Check the final characters.');
+} return {bytes, mime};
+}
+async function convert() {
+if (busy) return;
+busy = true;
+$('convert').disabled = true;
+invalidate();
+const token = revision;
+const currentMode = mode;
+status('Converting…');
+await new Promise(resolve => setTimeout(resolve, 20));
+if (revision !== token) {
+busy = false;
+$('convert').disabled = false;
+return;
+} try {
+let output;
+if (currentMode === 'encode') {
+const bytes = selectedFile ? fileBytes : encoder.encode($('input').value);
+if (!bytes) throw new Error('Please wait for the file to finish loading.');
+output = encodeBytes(bytes);
+if ($('urlSafe').checked) output = output.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+if ($('dataUrl').checked) {
+if ($('urlSafe').checked) throw new Error('Data URLs require standard Base64. Turn off the URL-safe option.');
+output = 'data:' + (selectedFile ? selectedFile.type || 'application/octet-stream' : 'text/plain;charset=utf-8') + ';base64,' + output;
+}
+resultBytes = encoder.encode(output);
+resultMime = 'text/plain;charset=utf-8';
+resultName = selectedFile ? selectedFile.name + '.base64.txt' : 'encoded.base64.txt';
+$('outputEncoding').textContent = $('urlSafe').checked ? 'URL-SAFE' : 'RFC 4648';
+status('Encoded ' + size(bytes.length) + ' successfully.', 'success');
+} else {
+const decoded = decodeBase64($('input').value);
+resultBytes = decoded.bytes;
+resultMime = decoded.mime;
+try {
+output = new TextDecoder('utf-8', {fatal:true, ignoreBOM:true}).decode(resultBytes);
+binaryResult = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(output);
+} catch {
+binaryResult = true;
+}
+if (binaryResult) {
+const preview = Array.from(resultBytes.subarray(0, 256), b => b.toString(16).padStart(2, '0'));
+const rows = [];
+for (let i = 0; i < preview.length; i += 16) rows.push(i.toString(16).padStart(8, '0') + ' ' + preview.slice(i, i + 16).join(' '));
+output = '[Binary data · hexadecimal preview]\n\n' + rows.join('\n') + (resultBytes.length > 256 ? '\n\n… Preview limited to 256 bytes.' : '');
+$('outputEncoding').textContent = 'BINARY / HEX';
+} else {
+$('outputEncoding').textContent = 'UTF-8';
+}
+const extension = {'image/png':'png','image/jpeg':'jpg','image/gif':'gif','image/webp':'webp','application/pdf':'pdf','application/zip':'zip','application/json':'json','text/html':'html','text/plain':'txt','image/svg+xml':'svg'}[String(resultMime).split(';')[0].toLowerCase()];
+resultName = 'decoded.' + (extension || (binaryResult ? 'bin' : 'txt'));
+status('Decoded ' + size(resultBytes.length) + (binaryResult ? '. Binary data detected; download to save the original bytes.' : ' successfully.'), 'success');
+}
+$('output').value = output;
+$('outputStats').textContent = binaryResult ? size(resultBytes.length) + ' · original bytes' : output.length.toLocaleString() + ' characters';
+$('download').disabled = false;
+$('copy').disabled = binaryResult || !output.length;
+$('swap').disabled = binaryResult || !output.length;
+} catch (error) {
+status(error.message || 'Conversion failed. Check your input.', 'error');
+} finally {
+busy = false;
+$('convert').disabled = false;
+} }
+async function loadFile(file) {
+if (!file) return;
+if (file.size > MAX_FILE) {
+status('That file exceeds the 25 MiB limit. Please choose a smaller file.', 'error');
+return;
+} if (mode !== 'encode') setMode('encode');
+invalidate();
+clearFile();
+const token = revision;
+status('Reading ' + file.name + '…');
+try {
+const bytes = new Uint8Array(await file.arrayBuffer());
+if (token !== revision) return;
+selectedFile = file;
+fileBytes = bytes;
+$('input').value = '';
+$('input').readOnly = true;
+$('input').placeholder = 'File loaded. Select “Encode to Base64” to convert.\n\nRemove the file to return to text input.';
+$('fileName').textContent = file.name + ' · ' + size(file.size);
+$('fileBar').classList.add('visible');
+$('inputType').textContent = 'FILE';
+$('inputEncoding').textContent = 'RAW BYTES';
+updateStats();
+status('File ready. Its original binary bytes will be encoded.', 'success');
+} catch {
+status('Unable to read this file. Please try selecting it again.', 'error');
+} }
+$('encodeTab').addEventListener('click', () => setMode('encode'));
+$('decodeTab').addEventListener('click', () => setMode('decode'));
+document.querySelector('.tabs').addEventListener('keydown', event => {
+if (['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) {
+event.preventDefault();
+setMode(event.key === 'Home' ? 'encode' : event.key === 'End' ? 'decode' : mode === 'encode' ? 'decode' : 'encode');
+$(mode + 'Tab').focus();
+} });
+$('input').addEventListener('input', () => {invalidate();updateStats();status('Input updated. Run the conversion when ready.');});
+$('convert').addEventListener('click', convert);
+$('clear').addEventListener('click', () => {
+clearFile();
+$('input').value = '';
+$('input').placeholder = mode === 'encode' ? 'Type or paste your text here…' : 'Paste Base64 or a data URL here…';
+invalidate();
+updateStats();
+status('Cleared. Ready for a fresh start.');
+$('input').focus();
+});
+$('removeFile').addEventListener('click', () => {
+clearFile();
+invalidate();
+$('input').placeholder = 'Type or paste your text here…';
+updateStats();
+status('File removed.');
+$('input').focus();
+});
+$('swap').addEventListener('click', () => {
+const text = $('output').value;
+setMode(mode === 'encode' ? 'decode' : 'encode');
+$('input').value = text;
+updateStats();
+status('Output moved to input. Ready to convert back.');
+});
+$('copy').addEventListener('click', async () => {
+const value = $('output').value;
+try {
+if (!navigator.clipboard || !window.isSecureContext) throw new Error('fallback');
+await navigator.clipboard.writeText(value);
+status('Output copied to clipboard.', 'success');
+} catch {
+$('output').focus();
+$('output').select();
+try {
+if (!document.execCommand('copy')) throw new Error('Copy unavailable');
+status('Output copied to clipboard.', 'success');
+} catch {
+status('Output selected. Press Ctrl+C or ⌘C to copy.');
+}
+} });
+$('download').addEventListener('click', () => {
+if (!resultBytes) return;
+const url = URL.createObjectURL(new Blob([resultBytes], {type: resultMime}));
+const link = document.createElement('a');
+link.href = url;
+link.download = resultName;
+document.body.appendChild(link);
+link.click();
+link.remove();
+setTimeout(() => URL.revokeObjectURL(url), 60000);
+status('Download prepared: ' + resultName, 'success');
+});
+['urlSafe','dataUrl'].forEach(id => $(id).addEventListener('change', () => {
+if ($(id).checked) $(id === 'urlSafe' ? 'dataUrl' : 'urlSafe').checked = false;
+invalidate();
+status('Options updated. Run the conversion to apply.');
+}));
+$('browse').addEventListener('click', () => {$('fileInput').value = '';$('fileInput').click();});
+$('fileInput').addEventListener('change', event => loadFile(event.target.files));
+let dragDepth = 0;
+const zone = $('dropzone');
+zone.addEventListener('dragenter', event => {event.preventDefault();dragDepth++;zone.classList.add('dragging');});
+zone.addEventListener('dragover', event => {event.preventDefault();event.dataTransfer.dropEffect = 'copy';});
+zone.addEventListener('dragleave', event => {event.preventDefault();if (--dragDepth <= 0) {dragDepth = 0;zone.classList.remove('dragging');}});
+zone.addEventListener('drop', event => {
+event.preventDefault();
+dragDepth = 0;
+zone.classList.remove('dragging');
+const files = event.dataTransfer.files;
+if (files.length > 1) {status('Please drop one file at a time.', 'error');return;}
+if (files.length) loadFile(files);
+else status('Drop a file from your device, or use “browse files”.', 'error');
+});
+window.addEventListener('dragover', event => {if (Array.from(event.dataTransfer.types).includes('Files')) event.preventDefault();});
+window.addEventListener('drop', event => {
+if (Array.from(event.dataTransfer.types).includes('Files')) {
+event.preventDefault();
+if (!zone.contains(event.target)) status('Use the file drop area in Encode mode to load a file.');
+} });
+document.addEventListener('keydown', event => {
+if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+event.preventDefault();
+convert();
+} });
+</script>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+</body>
+</html>

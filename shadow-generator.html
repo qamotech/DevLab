@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090d16">
+<title>ShadowLab — Box Shadow Generator</title>
+<style>
+:root{color-scheme:dark;--bg:#090d16;--panel:#111827;--panel2:#0b1220;--line:#27354a;--text:#e6edf8;--muted:#91a0b8;--accent:#42e8ff;--purple:#a78bfa}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.app{max-width:1200px;margin:auto;padding:25px 20px}
+header{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{height:43px;width:43px;display:grid;place-items:center;border-radius:12px;background:#132b3c;border:1px solid #285568;color:var(--accent);font-size:25px}
+h1{font-size:21px;letter-spacing:-.6px;margin:0}
+.subtitle{font-size:12px;color:var(--muted);margin-top:3px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:#182235;color:var(--text);border-radius:8px;padding:9px 13px;font-size:12px;font-weight:650}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#06121a}
+.layout{display:grid;grid-template-columns:minmax(280px,355px) minmax(0,1fr);gap:18px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:13px;overflow:hidden;min-width:0}
+.panelhead{padding:15px 17px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.panelhead h2{font-size:13px;margin:0}
+.tag{font-size:10px;color:var(--accent);letter-spacing:1px;font-weight:750}
+.body{padding:17px}
+.section{padding-bottom:17px;margin-bottom:17px;border-bottom:1px solid var(--line)}
+.section:last-child{padding:0;margin:0;border:0}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;font-size:11px;font-weight:800;letter-spacing:.7px}
+.section-title span{font-size:10px;color:var(--muted);font-weight:500;letter-spacing:0}
+.field{margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+.labelrow{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+label{font-size:12px;color:#c7d3e6}
+.value{color:var(--accent);font-size:12px;font-variant-numeric:tabular-nums}
+.range-row{display:flex;align-items:center;gap:10px}
+input[type=range]{width:100%;min-width:0;accent-color:var(--accent);cursor:pointer}
+.number{width:64px;flex:none;padding:6px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;color:var(--text);text-align:center;font-size:12px}
+.colorrow{display:flex;align-items:center;gap:9px}
+input[type=color]{width:39px;height:36px;padding:3px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;cursor:pointer}
+.hex{width:100%;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:7px;color:var(--text);padding:9px;font-size:12px;text-transform:uppercase}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.toggle:last-child{margin-bottom:0}
+.switch{appearance:none;width:36px;height:20px;border-radius:20px;background:#364257;position:relative;cursor:pointer;flex:none;transition:.2s}
+.switch:before{content:"";position:absolute;width:14px;height:14px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.2s}
+.switch:checked{background:#12b8d0}
+.switch:checked:before{left:19px}
+.select{width:100%;padding:9px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;color:var(--text)}
+.stage{height:360px;position:relative;display:grid;place-items:center;overflow:hidden;background-color:#0d1422;background-image:linear-gradient(#1b293d 1px,transparent 1px),linear-gradient(90deg,#1b293d 1px,transparent 1px);background-size:24px 24px}
+.stage.solid{background-image:none}
+.stage.checker{background-color:#101827;background-image:linear-gradient(45deg,#202c40 25%,transparent 25%),linear-gradient(-45deg,#202c40 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#202c40 75%),linear-gradient(-45deg,transparent 75%,#202c40 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}
+.stage-label{position:absolute;top:13px;left:15px;color:#8191aa;font-size:10px;letter-spacing:1.3px;text-transform:uppercase}
+.stage-dimensions{position:absolute;bottom:12px;right:14px;color:#8191aa;font-size:10px}
+.object{width:220px;height:150px;max-width:75%;display:grid;place-items:center;background:#42e8ff;border-radius:14px;transition:box-shadow .08s,background .08s,border-radius .08s;position:relative}
+.object span{font-weight:800;color:#09202b;font-size:14px;text-align:center}
+.tabs{display:flex;gap:5px}
+.tab{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:6px;padding:6px 9px;font-size:10px}
+.tab.active{border-color:#28687b;background:#153040;color:var(--accent)}
+.output{padding:16px;border-top:1px solid var(--line)}
+.output-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.output-head h3{font-size:12px;margin:0}
+.code{padding:13px;background:#080d16;border:1px solid #202e42;border-radius:8px;color:#a6e8f5;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;min-height:52px}
+.output-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.notice{font-size:11px;color:var(--muted);margin:12px 0 0}
+.presets-title{display:flex;justify-content:space-between;align-items:center;margin:22px 0 12px}
+.presets-title h2{font-size:13px;margin:0}
+.presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.preset{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:12px 5px;color:var(--text)}
+.preset:hover{border-color:var(--accent)}
+.preset-view{height:43px;display:grid;place-items:center;margin-bottom:7px}
+.preset-shape{width:35px;height:29px;border-radius:6px;background:#26394f}
+.preset-name{font-size:10px;color:#b7c6db}
+footer{text-align:center;color:#65748c;font-size:10px;padding:24px 0 5px}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.stage{height:320px}.controls .body{display:grid;grid-template-columns:1fr 1fr;gap:18px}.section{margin:0;padding-bottom:16px}.section:last-child{padding:0}.presets{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:500px){.app{padding:15px 12px}.brand h1{font-size:19px}.layout{gap:13px}.controls .body{display:block}.section{margin-bottom:17px;padding-bottom:17px}.stage{height:270px}.presets{gap:6px}.preset{padding:9px 2px}.preset-name{font-size:9px}.actions .btn{padding:8px 10px}.tabs{gap:3px}.tab{padding:6px}.object{width:190px;height:130px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<div class="brand">
+<div class="logo">◈</div>
+<div><h1>Shadow<span style="color:var(--accent)">Lab</span></h1><div class="subtitle">CSS Box-Shadow Generator</div></div>
+</div>
+<div class="actions">
+<button class="btn" id="reset">↺ Reset</button>
+<button class="btn" id="random">⤨ Random</button>
+<button class="btn primary" id="copyTop">Copy CSS</button>
+</div>
+</header>
+<main class="layout">
+<section class="panel controls">
+<div class="panelhead"><h2>Shadow Controls</h2><span class="tag">LIVE EDITOR</span></div>
+<div class="body">
+<div class="section">
+<div class="section-title">POSITION & SIZE <span>PIXELS</span></div>
+<div class="field"><div class="labelrow"><label for="x">Horizontal offset (X)</label><span class="value" id="xv">8px</span></div><div class="range-row"><input type="range" id="x" min="-100" max="100" value="8"><input class="number" id="xn" type="number" min="-1000" max="1000" value="8" aria-label="Horizontal offset"></div></div>
+<div class="field"><div class="labelrow"><label for="y">Vertical offset (Y)</label><span class="value" id="yv">8px</span></div><div class="range-row"><input type="range" id="y" min="-100" max="100" value="8"><input class="number" id="yn" type="number" min="-1000" max="1000" value="8" aria-label="Vertical offset"></div></div>
+<div class="field"><div class="labelrow"><label for="blur">Blur radius</label><span class="value" id="blurv">20px</span></div><div class="range-row"><input type="range" id="blur" min="0" max="150" value="20"><input class="number" id="blurn" type="number" min="0" max="1000" value="20" aria-label="Blur radius"></div></div>
+<div class="field"><div class="labelrow"><label for="spread">Spread radius</label><span class="value" id="spreadv">0px</span></div><div class="range-row"><input type="range" id="spread" min="-100" max="100" value="0"><input class="number" id="spreadn" type="number" min="-1000" max="1000" value="0" aria-label="Spread radius"></div></div>
+</div>
+<div class="section">
+<div class="section-title">COLOR & OPACITY <span>RGBA</span></div>
+<div class="field"><div class="labelrow"><label for="color">Shadow color</label><span class="value" id="colorv">#000000</span></div><div class="colorrow"><input type="color" id="color" value="#000000" aria-label="Choose shadow color"><input class="hex" id="hex" value="#000000" maxlength="7" aria-label="Shadow hex color"></div></div>
+<div class="field"><div class="labelrow"><label for="opacity">Opacity</label><span class="value" id="opacityv">25%</span></div><div class="range-row"><input type="range" id="opacity" min="0" max="100" value="25"><input class="number" id="opacityn" type="number" min="0" max="100" value="25" aria-label="Shadow opacity"></div></div>
+<div class="toggle"><label for="inset">Inset shadow</label><input class="switch" id="inset" type="checkbox"></div>
+</div>
+<div class="section">
+<div class="section-title">PREVIEW SETTINGS <span>OBJECT</span></div>
+<div class="field"><div class="labelrow"><label for="bgColor">Object color</label><span class="value" id="bgv">#42E8FF</span></div><div class="colorrow"><input type="color" id="bgColor" value="#42e8ff" aria-label="Object color"><input class="hex" id="bgHex" value="#42E8FF" maxlength="7" aria-label="Object hex color"></div></div>
+<div class="field"><div class="labelrow"><label for="radius">Corner radius</label><span class="value" id="radiusv">14px</span></div><input type="range" id="radius" min="0" max="100" value="14"></div>
+<div class="field"><label for="shape" style="display:block;margin-bottom:8px">Object shape</label><select class="select" id="shape"><option value="rect">Rectangle</option><option value="circle">Circle</option><option value="pill">Pill</option></select></div>
+<div class="field"><label for="background" style="display:block;margin-bottom:8px">Canvas background</label><select class="select" id="background"><option value="grid">Grid</option><option value="solid">Solid dark</option><option value="checker">Checkerboard</option></select></div>
+</div>
+</div>
+</section>
+<section class="panel">
+<div class="panelhead"><h2>Live Preview</h2><div class="tabs" id="tabs"><button class="tab active" data-mode="object">Object</button><button class="tab" data-mode="text">Text</button><button class="tab" data-mode="outline">Outline</button></div></div>
+<div class="stage" id="stage"><span class="stage-label">LIVE RENDER</span><div class="object" id="object"><span id="objectText">SHADOW<br>LAB</span></div><span class="stage-dimensions" id="dimensions">220 × 150 px</span></div>
+<div class="output">
+<div class="output-head"><h3>CSS OUTPUT</h3><button class="btn" id="format">Multiline: Off</button></div>
+<div class="code" id="code" aria-label="Generated CSS" aria-live="polite">box-shadow: 8px 8px 20px 0px rgba(0, 0, 0, 0.25);</div>
+<div class="output-actions"><button class="btn primary" id="copyCode">Copy shadow</button><button class="btn" id="copyFull">Copy full rule</button><button class="btn" id="download">Download CSS</button></div>
+<p class="notice" id="status" role="status">Adjust any control to update your CSS instantly.</p>
+</div>
+</section>
+</main>
+<div class="presets-title"><h2>Quick-start presets</h2><span class="tag">ONE-CLICK STYLES</span></div>
+<div class="presets" id="presets"></div>
+<footer>SHADOWLAB · CSS BOX-SHADOW STUDIO · NO DEPENDENCIES</footer>
+</div>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const defaults={x:8,y:8,blur:20,spread:0,color:'#000000',opacity:25,inset:false};
+let s={...defaults},mode='object',multiline=false;
+const presets=[
+{name:'Soft Elevation',s:{x:0,y:8,blur:24,spread:0,color:'#000000',opacity:15,inset:false}},
+{name:'Floating Card',s:{x:0,y:15,blur:35,spread:-5,color:'#000000',opacity:25,inset:false}},
+{name:'Hard Shadow',s:{x:8,y:8,blur:0,spread:0,color:'#000000',opacity:70,inset:false}},
+{name:'Neumorphic',s:{x:8,y:8,blur:18,spread:0,color:'#000000',opacity:18,inset:false}},
+{name:'Inner Depth',s:{x:0,y:4,blur:12,spread:0,color:'#000000',opacity:25,inset:true}},
+{name:'Neon Cyan',s:{x:0,y:0,blur:25,spread:3,color:'#42e8ff',opacity:65,inset:false}},
+{name:'Purple Glow',s:{x:0,y:0,blur:35,spread:5,color:'#a78bfa',opacity:55,inset:false}},
+{name:'Sharp Lift',s:{x:0,y:12,blur:8,spread:-4,color:'#000000',opacity:35,inset:false}}
+];
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,Number.isFinite(Number(v))?Number(v):0));
+function rgba(hex,opacity){let h=hex.slice(1);if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return `rgba(${n>>16}, ${(n>>8)&255}, ${n&255}, ${(opacity/100).toFixed(2)})`}
+function shadow(){return `${s.inset?'inset ':''}${s.x}px ${s.y}px ${s.blur}px ${s.spread}px ${rgba(s.color,s.opacity)}`}
+function rule(){return `box-shadow: ${shadow()};`}
+function announce(msg){$('status').textContent=msg}
+function render(){
+for(const k of ['x','y','blur','spread','opacity']){
+const unit=k==='opacity'?'%':'px';
+$(k).value=s[k];$(k+'n').value=s[k];$(k+'v').textContent=s[k]+unit;
+}
+$('color').value=s.color;$('hex').value=s.color.toUpperCase();$('colorv').textContent=s.color.toUpperCase();$('inset').checked=s.inset;
+const bg=$('bgColor').value;
+$('bgv').textContent=bg.toUpperCase();$('bgHex').value=bg.toUpperCase();
+$('radiusv').textContent=$('radius').value+'px';
+const o=$('object');
+o.style.boxShadow=shadow();
+o.style.background=mode==='outline'?'transparent':bg;
+o.style.border=mode==='outline'?'2px solid '+bg:'none';
+o.style.borderRadius=$('shape').value==='circle'?'50%':$('shape').value==='pill'?'999px':$('radius').value+'px';
+$('objectText').style.display=mode==='outline'?'none':'block';
+$('objectText').innerHTML=mode==='text'?'Live CSS<br>Shadow':'SHADOW<br>LAB';
+$('dimensions').textContent='220 × 150 px';
+$('code').textContent=multiline?`box-shadow:\n ${shadow()};`:rule();
+}
+function bindRange(k,min,max){
+const apply=v=>{s[k]=clamp(v,min,max);render()};
+$(k).addEventListener('input',e=>apply(e.target.value));
+$(k+'n').addEventListener('change',e=>apply(e.target.value));
+}
+bindRange('x',-1000,1000);bindRange('y',-1000,1000);bindRange('blur',0,1000);bindRange('spread',-1000,1000);bindRange('opacity',0,100);
+function validHex(v){if(/^#[\da-f]{3}$/i.test(v))return '#'+v.slice(1).split('').map(c=>c+c).join('');return /^#[\da-f]{6}$/i.test(v)?v:null}
+function bindColor(picker,hex,key){
+$(picker).addEventListener('input',()=>{if(key)s[key]=$(picker).value;else $('bgColor').value=$(picker).value;render()});
+$(hex).addEventListener('change',()=>{
+const v=validHex($(hex).value.trim());
+if(!v){announce('Invalid hex color. Use #000000 or #abc.');$(hex).value=key?s[key]:$('bgColor').value;return}
+if(key)s[key]=v;else $('bgColor').value=v;
+render();
+});
+}
+bindColor('color','hex','color');bindColor('bgColor','bgHex',null);
+$('inset').addEventListener('change',e=>{s.inset=e.target.checked;render()});
+['radius','shape'].forEach(k=>$(k).addEventListener('input',render));
+$('background').addEventListener('change',()=>{
+$('stage').classList.remove('solid','checker');
+if($('background').value!=='grid')$('stage').classList.add($('background').value);
+});
+$('tabs').addEventListener('click',e=>{
+const b=e.target.closest('[data-mode]');if(!b)return;
+mode=b.dataset.mode;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===b));render();
+});
+function applyPreset(p){s={...p.s};render();announce(p.name+' preset applied.')}
+function renderPresets(){
+const root=$('presets');root.replaceChildren();
+presets.forEach(p=>{
+const b=document.createElement('button');b.className='preset';
+const v=document.createElement('div');v.className='preset-view';
+const shape=document.createElement('div');shape.className='preset-shape';
+const a=p.s;shape.style.boxShadow=`${a.inset?'inset ':''}${a.x/2}px ${a.y/2}px ${a.blur/2}px ${a.spread/2}px ${rgba(a.color,a.opacity)}`;
+v.append(shape);
+const n=document.createElement('div');n.className='preset-name';n.textContent=p.name;
+b.append(v,n);b.addEventListener('click',()=>applyPreset(p));root.append(b);
+});
+}
+async function copy(text){
+try{
+if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(text);
+else{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.append(ta);ta.select();const ok=document.execCommand('copy');ta.remove();if(!ok)throw Error('copy failed')}
+announce('Copied to clipboard.');
+}catch{announce('Clipboard unavailable. Select the CSS output and copy it manually.')}
+}
+$('copyTop').onclick=() =>copy(rule());
+$('copyCode').onclick=()=>copy(shadow());
+$('copyFull').onclick=()=>copy(`.shadow-element {\n ${rule()}\n}`);
+$('format').onclick=()=>{multiline=!multiline;$('format').textContent='Multiline: '+(multiline?'On':'Off');render()};
+$('download').onclick=()=>{
+const content=`/* Generated by ShadowLab */\n.shadow-element {\n ${rule()}\n}\n`;
+const url=URL.createObjectURL(new Blob([content],{type:'text/css'}));
+const a=document.createElement('a');a.href=url;a.download='shadowlab.css';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);announce('CSS downloaded.');
+};
+$('reset').onclick=()=>{
+s={...defaults};$('bgColor').value='#42e8ff';$('radius').value=14;$('shape').value='rect';$('background').value='grid';$('stage').classList.remove('solid','checker');mode='object';multiline=false;$('format').textContent='Multiline: Off';document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.mode===mode));render();announce('Settings reset.');
+};
+$('random').onclick=()=>{
+const hex=()=> '#'+Math.floor(Math.random()*16777216).toString(16).padStart(6,'0');
+s={x:Math.round(Math.random()*50-25),y:Math.round(Math.random()*50-25),blur:Math.round(Math.random()*70),spread:Math.round(Math.random()*20-10),color:hex(),opacity:Math.round(20+Math.random()*70),inset:Math.random()<.2};render();announce('Random shadow generated.');
+};
+renderPresets();render();
+})();
+</script>
+<a href="index.html" style="position:fixed;bottom:14px;left:14px;background:#0ea5e9;color:#04121f;font:700 13px/1 system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 4px 14px rgba(14,165,233,.4);z-index:9999;">← DevLab home</a>
+</body>
+</html>
