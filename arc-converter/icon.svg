@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#070d1f"/>
+  <path d="M112 400 A 208 208 0 0 1 400 112" fill="none" stroke="#1F51FF" stroke-width="52" stroke-linecap="round"/>
+  <circle cx="400" cy="400" r="42" fill="#ffd34d"/>
+  <text x="256" y="300" font-family="Arial, sans-serif" font-size="120" font-weight="900" fill="#eef2ff" text-anchor="middle">⇅</text>
+  <text x="256" y="392" font-family="Arial, sans-serif" font-size="64" font-weight="800" fill="#5b83ff" text-anchor="middle">KG·LB</text>
+</svg>
