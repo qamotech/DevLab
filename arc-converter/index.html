@@ -27,6 +27,10 @@
   .glow.a{width:340px;height:340px;background:#1F51FF;top:-120px;left:-100px;animation:drift 16s ease-in-out infinite alternate}
   .glow.b{width:260px;height:260px;background:#0f2f8f;bottom:-90px;right:-70px;animation:drift 20s ease-in-out infinite alternate-reverse}
   @keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(46px,30px) scale(1.12)}}
+  /* EFFECT 9: floating scales & dock items */
+  .floaties{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
+  .fi{position:absolute; opacity:.34; animation:floaty ease-in-out infinite alternate; will-change:transform}
+  @keyframes floaty{from{transform:translate(0,0) rotate(-7deg)}to{transform:translate(12px,-26px) rotate(8deg)}}
   .wrap{width:100%; max-width:430px; position:relative; z-index:1}
   header{display:flex; align-items:center; gap:12px; margin-bottom:6px}
   .logo{width:52px;height:52px;flex:0 0 auto}
@@ -97,6 +101,16 @@
 </head>
 <body>
 <div class="glow a"></div><div class="glow b"></div>
+<div class="floaties" aria-hidden="true">
+  <span class="fi" style="left:56%;top:0.8%;font-size:42px;animation-duration:11s">⚖️</span>
+  <span class="fi" style="left:78%;top:2%;font-size:24px;animation-duration:12.5s;animation-delay:-7s">📦</span>
+  <span class="fi" style="left:89%;top:16%;font-size:28px;animation-duration:9s;animation-delay:-3s">🏋️</span>
+  <span class="fi" style="left:2.5%;top:40%;font-size:24px;animation-duration:10s;animation-delay:-2s">🥫</span>
+  <span class="fi" style="left:90%;top:55%;font-size:32px;animation-duration:13s;animation-delay:-6s">📦</span>
+  <span class="fi" style="left:84%;top:92%;font-size:26px;animation-duration:12s;animation-delay:-8s">🏷️</span>
+  <span class="fi" style="left:8%;top:93%;font-size:32px;animation-duration:14s;animation-delay:-5s">⚖️</span>
+  <span class="fi" style="left:45%;top:95%;font-size:22px;animation-duration:9.5s;animation-delay:-1s">🧮</span>
+</div>
 <div class="wrap">
   <header>
     <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0e1730"/><path class="arc" d="M14 50 A 26 26 0 0 1 50 14" fill="none" stroke="#1F51FF" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="50" r="5" fill="#ffd34d"/></svg>
