@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Arc Bev Co. — KG · G ↔ LB Converter</title>
-<meta name="description" content="Fast kilograms, grams and pounds converter for the dock. Arc Beverage Co.">
+<title>Arc Bev Co. — KG · G · OZ · LB Converter</title>
+<meta name="description" content="Fast kilograms, grams, ounces and pounds converter for the dock. Arc Beverage Co.">
 <meta name="theme-color" content="#070d1f">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070d1f'/%3E%3Cpath d='M14 50 A 26 26 0 0 1 50 14' fill='none' stroke='%231F51FF' stroke-width='7' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='50' r='6' fill='%23ffd34d'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -102,7 +102,7 @@
     <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0e1730"/><path class="arc" d="M14 50 A 26 26 0 0 1 50 14" fill="none" stroke="#1F51FF" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="50" r="5" fill="#ffd34d"/></svg>
     <div>
       <h1>ARC BEVERAGE <span>CO.</span></h1>
-      <p class="sub">⚖️ KG · G ↔ LB Converter — dock quick tool</p>
+      <p class="sub">⚖️ KG · G · OZ · LB Converter — dock quick tool</p>
     </div>
   </header>
 
@@ -118,9 +118,12 @@
     <label for="lb">POUNDS</label>
     <div class="field"><input id="lb" type="text" inputmode="decimal" placeholder="0" autocomplete="off"><span class="unit">lb</span></div>
 
+    <label for="oz">OUNCES</label>
+    <div class="field"><input id="oz" type="text" inputmode="decimal" placeholder="0" autocomplete="off"><span class="unit">oz</span></div>
+
     <div class="result" id="resultBox">
       <div class="big" id="bigResult">Type a weight 👆</div>
-      <div class="eq" id="eqLine">1 kg = 2.20462 lb · 1 lb = 453.59 g</div>
+      <div class="eq" id="eqLine">1 kg = 2.20462 lb · 1 lb = 16 oz · 1 lb = 453.59 g</div>
     </div>
 
     <p class="chipslabel">QUICK KG</p>
@@ -133,21 +136,21 @@
     <button id="install" class="ripple">📲 Install as app</button>
   </div>
 
-  <footer><b>ARC BEVERAGE CO.</b><br>1 kg = 2.20462 lb · 1 lb = 453.592 g · works offline once installed</footer>
+  <footer><b>ARC BEVERAGE CO.</b><br>1 kg = 2.20462 lb · 1 lb = 16 oz = 453.592 g · works offline once installed</footer>
 </div>
 
 <script>
 const FACTOR = 2.20462262185; /* lb per kg */
-const kgEl = document.getElementById('kg'), gEl = document.getElementById('g'), lbEl = document.getElementById('lb');
-const els = { kg: kgEl, g: gEl, lb: lbEl };
+const kgEl = document.getElementById('kg'), gEl = document.getElementById('g'), lbEl = document.getElementById('lb'), ozEl = document.getElementById('oz');
+const els = { kg: kgEl, g: gEl, lb: lbEl, oz: ozEl };
 const box = document.getElementById('resultBox'), big = document.getElementById('bigResult'), eq = document.getElementById('eqLine');
 let lastEdited = 'kg', displayed = 0, tween = null;
 
 const fmt  = n => n.toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
 const fmtG = n => n.toLocaleString('en-US',{maximumFractionDigits:2});
 function parse(el){ const v = parseFloat(String(el.value).replace(',','.')); return isFinite(v) ? v : null; }
-function toKg(src, v){ return src==='kg' ? v : src==='g' ? v/1000 : v/FACTOR; }
-function fromKg(src, kg){ return src==='kg' ? kg : src==='g' ? kg*1000 : kg*FACTOR; }
+function toKg(src, v){ return src==='kg' ? v : src==='g' ? v/1000 : src==='oz' ? v/(FACTOR*16) : v/FACTOR; }
+function fromKg(src, kg){ return src==='kg' ? kg : src==='g' ? kg*1000 : src==='oz' ? kg*FACTOR*16 : kg*FACTOR; }
 
 /* EFFECT 2: count-up tween on the result number */
 function tweenTo(target, unit){
@@ -169,7 +172,7 @@ function update(source){
   if(el.value.trim() !== '' && v === null){ el.classList.add('bad'); big.textContent = 'Numbers only ⚠️'; eq.textContent = 'Check that entry'; return; }
   if(v === null || v === 0){
     for(const k in els){ if(k !== source) els[k].value = ''; }
-    big.textContent = 'Type a weight 👆'; eq.textContent = '1 kg = 2.20462 lb · 1 lb = 453.59 g'; displayed = 0; return;
+    big.textContent = 'Type a weight 👆'; eq.textContent = '1 kg = 2.20462 lb · 1 lb = 16 oz · 1 lb = 453.59 g'; displayed = 0; return;
   }
   const kg = toKg(source, v);
   for(const k in els){
@@ -178,12 +181,13 @@ function update(source){
   }
   const target = (source === 'lb') ? 'kg' : 'lb';
   tweenTo(fromKg(target, kg), target);
-  eq.textContent = fmtG(fromKg('g', kg)) + ' g  =  ' + fmt(kg) + ' kg  =  ' + fmt(fromKg('lb', kg)) + ' lb';
+  eq.textContent = fmtG(fromKg('g', kg)) + ' g  =  ' + fmt(kg) + ' kg  =  ' + fmt(fromKg('oz', kg)) + ' oz  =  ' + fmt(fromKg('lb', kg)) + ' lb';
   pop();
 }
 kgEl.addEventListener('input', ()=>{ lastEdited='kg'; update('kg'); });
 gEl .addEventListener('input', ()=>{ lastEdited='g';  update('g');  });
 lbEl.addEventListener('input', ()=>{ lastEdited='lb'; update('lb'); });
+ozEl.addEventListener('input', ()=>{ lastEdited='oz'; update('oz'); });
 
 document.getElementById('swap').addEventListener('click', e=>{
   const b = e.currentTarget; b.classList.remove('flip'); void b.offsetWidth; b.classList.add('flip');
@@ -203,7 +207,7 @@ document.getElementById('copy').addEventListener('click', async ()=>{
   try{ await navigator.clipboard.writeText(t); big.innerHTML = '✅ Copied!'; setTimeout(()=>update(lastEdited), 900); }
   catch(e){ big.textContent = t; }
 });
-document.getElementById('clear').addEventListener('click', ()=>{ kgEl.value=''; gEl.value=''; lbEl.value=''; update('kg'); kgEl.focus(); });
+document.getElementById('clear').addEventListener('click', ()=>{ kgEl.value=''; gEl.value=''; lbEl.value=''; ozEl.value=''; update('kg'); kgEl.focus(); });
 
 /* PWA install */
 let deferredPrompt = null;
