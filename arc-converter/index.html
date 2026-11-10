@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Arc Bev Co. — KG ↔ LB Converter</title>
-<meta name="description" content="Fast kilograms to pounds and pounds to kilograms converter for the dock. Arc Beverage Co.">
+<title>Arc Bev Co. — KG · G ↔ LB Converter</title>
+<meta name="description" content="Fast kilograms, grams and pounds converter for the dock. Arc Beverage Co.">
 <meta name="theme-color" content="#070d1f">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070d1f'/%3E%3Cpath d='M14 50 A 26 26 0 0 1 50 14' fill='none' stroke='%231F51FF' stroke-width='7' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='50' r='6' fill='%23ffd34d'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -42,11 +42,12 @@
     border:1px solid var(--line); border-radius:20px; padding:18px 16px 16px; margin-top:16px;
     box-shadow:0 14px 34px rgba(0,0,0,.45);
   }
-  label{display:block; font-size:12px; font-weight:700; letter-spacing:1.2px; color:var(--muted); margin:0 0 7px 2px}
+  label{display:block; font-size:12px; font-weight:700; letter-spacing:1.2px; color:var(--muted); margin:14px 0 7px 2px}
+  label:first-of-type{margin-top:0}
   .field{position:relative}
   input{
     width:100%; background:#0a1228; border:2px solid var(--line); border-radius:14px;
-    color:var(--text); font-size:32px; font-weight:800; padding:13px 58px 13px 15px; outline:none;
+    color:var(--text); font-size:30px; font-weight:800; padding:12px 58px 12px 15px; outline:none;
     transition:border-color .2s;
   }
   .unit{position:absolute; right:16px; top:50%; transform:translateY(-50%); font-weight:800; color:var(--blue2); font-size:17px; pointer-events:none}
@@ -56,7 +57,7 @@
   /* EFFECT 7: invalid input shake + red flash */
   input.bad{border-color:#ff4d5e !important; animation:shake .4s ease}
   @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
-  .swaprow{display:flex; justify-content:center; margin:13px 0}
+  .swaprow{display:flex; justify-content:center; margin:13px 0 0}
   button{font-family:inherit; cursor:pointer; border:none; position:relative; overflow:hidden}
   /* EFFECT 6: ripple on press */
   .ripple::after{content:""; position:absolute; left:50%; top:50%; width:8px; height:8px; border-radius:50%;
@@ -80,11 +81,11 @@
   .result .big{font-size:29px; font-weight:900; letter-spacing:.2px}
   .result .big b{color:var(--gold)}
   .result .eq{color:var(--muted); font-size:13px; margin-top:3px}
-  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:15px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:9px}
   .chip{background:#0a1228; color:var(--text); border:1px solid var(--line); padding:10px 0; border-radius:999px;
     font-size:14.5px; font-weight:700; flex:1 1 17%; transition:border-color .15s, background .15s}
   .chip:active{background:var(--blue); border-color:var(--blue)}
-  .chipslabel{font-size:11px; color:var(--muted); letter-spacing:1px; font-weight:700; margin:16px 0 -7px 2px}
+  .chipslabel{font-size:11px; color:var(--muted); letter-spacing:1px; font-weight:700; margin:16px 0 0 2px}
   .rowbtns{display:flex; gap:9px; margin-top:15px}
   .btn{flex:1; padding:14px 0; border-radius:13px; font-size:16px; font-weight:800}
   #copy{background:var(--gold); color:#231a00}
@@ -101,7 +102,7 @@
     <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0e1730"/><path class="arc" d="M14 50 A 26 26 0 0 1 50 14" fill="none" stroke="#1F51FF" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="50" r="5" fill="#ffd34d"/></svg>
     <div>
       <h1>ARC BEVERAGE <span>CO.</span></h1>
-      <p class="sub">⚖️ KG ↔ LB Converter — dock quick tool</p>
+      <p class="sub">⚖️ KG · G ↔ LB Converter — dock quick tool</p>
     </div>
   </header>
 
@@ -109,14 +110,17 @@
     <label for="kg">KILOGRAMS</label>
     <div class="field"><input id="kg" type="text" inputmode="decimal" placeholder="0" autocomplete="off"><span class="unit">kg</span></div>
 
-    <div class="swaprow"><button id="swap" class="ripple" aria-label="Swap units">⇅</button></div>
+    <label for="g">GRAMS</label>
+    <div class="field"><input id="g" type="text" inputmode="decimal" placeholder="0" autocomplete="off"><span class="unit">g</span></div>
+
+    <div class="swaprow"><button id="swap" class="ripple" aria-label="Swap kilograms and pounds">⇅</button></div>
 
     <label for="lb">POUNDS</label>
     <div class="field"><input id="lb" type="text" inputmode="decimal" placeholder="0" autocomplete="off"><span class="unit">lb</span></div>
 
     <div class="result" id="resultBox">
       <div class="big" id="bigResult">Type a weight 👆</div>
-      <div class="eq" id="eqLine">1 kg = 2.20462 lb</div>
+      <div class="eq" id="eqLine">1 kg = 2.20462 lb · 1 lb = 453.59 g</div>
     </div>
 
     <p class="chipslabel">QUICK KG</p>
@@ -129,17 +133,21 @@
     <button id="install" class="ripple">📲 Install as app</button>
   </div>
 
-  <footer><b>ARC BEVERAGE CO.</b><br>1 kg = 2.20462 lb · works offline once installed</footer>
+  <footer><b>ARC BEVERAGE CO.</b><br>1 kg = 2.20462 lb · 1 lb = 453.592 g · works offline once installed</footer>
 </div>
 
 <script>
-const FACTOR = 2.20462262185;
-const kgEl = document.getElementById('kg'), lbEl = document.getElementById('lb');
+const FACTOR = 2.20462262185; /* lb per kg */
+const kgEl = document.getElementById('kg'), gEl = document.getElementById('g'), lbEl = document.getElementById('lb');
+const els = { kg: kgEl, g: gEl, lb: lbEl };
 const box = document.getElementById('resultBox'), big = document.getElementById('bigResult'), eq = document.getElementById('eqLine');
 let lastEdited = 'kg', displayed = 0, tween = null;
 
-const fmt = n => n.toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
+const fmt  = n => n.toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtG = n => n.toLocaleString('en-US',{maximumFractionDigits:2});
 function parse(el){ const v = parseFloat(String(el.value).replace(',','.')); return isFinite(v) ? v : null; }
+function toKg(src, v){ return src==='kg' ? v : src==='g' ? v/1000 : v/FACTOR; }
+function fromKg(src, kg){ return src==='kg' ? kg : src==='g' ? kg*1000 : kg*FACTOR; }
 
 /* EFFECT 2: count-up tween on the result number */
 function tweenTo(target, unit){
@@ -156,25 +164,31 @@ function tweenTo(target, unit){
 function pop(){ box.classList.remove('pop'); void box.offsetWidth; box.classList.add('pop'); }
 
 function update(source){
-  const el = source==='kg' ? kgEl : lbEl, other = source==='kg' ? lbEl : kgEl;
-  const v = parse(el);
+  const el = els[source], v = parse(el);
   el.classList.remove('bad');
   if(el.value.trim() !== '' && v === null){ el.classList.add('bad'); big.textContent = 'Numbers only ⚠️'; eq.textContent = 'Check that entry'; return; }
-  if(v === null || v === 0){ other.value=''; big.textContent='Type a weight 👆'; eq.textContent='1 kg = 2.20462 lb'; displayed=0; return; }
-  const conv = source==='kg' ? v*FACTOR : v/FACTOR;
-  other.value = fmt(conv);
-  tweenTo(conv, source==='kg' ? 'lb' : 'kg');
-  eq.textContent = fmt(v) + (source==='kg' ? ' kg' : ' lb') + '  =  ' + fmt(conv) + (source==='kg' ? ' lb' : ' kg');
+  if(v === null || v === 0){
+    for(const k in els){ if(k !== source) els[k].value = ''; }
+    big.textContent = 'Type a weight 👆'; eq.textContent = '1 kg = 2.20462 lb · 1 lb = 453.59 g'; displayed = 0; return;
+  }
+  const kg = toKg(source, v);
+  for(const k in els){
+    if(k === source) continue;
+    els[k].value = (k === 'g') ? fmtG(fromKg(k, kg)) : fmt(fromKg(k, kg));
+  }
+  const target = (source === 'lb') ? 'kg' : 'lb';
+  tweenTo(fromKg(target, kg), target);
+  eq.textContent = fmtG(fromKg('g', kg)) + ' g  =  ' + fmt(kg) + ' kg  =  ' + fmt(fromKg('lb', kg)) + ' lb';
   pop();
 }
 kgEl.addEventListener('input', ()=>{ lastEdited='kg'; update('kg'); });
+gEl .addEventListener('input', ()=>{ lastEdited='g';  update('g');  });
 lbEl.addEventListener('input', ()=>{ lastEdited='lb'; update('lb'); });
 
 document.getElementById('swap').addEventListener('click', e=>{
   const b = e.currentTarget; b.classList.remove('flip'); void b.offsetWidth; b.classList.add('flip');
   const k = kgEl.value; kgEl.value = lbEl.value; lbEl.value = k;
-  lastEdited = lastEdited==='kg' ? 'lb' : 'kg';
-  update(lastEdited);
+  lastEdited = 'kg'; update('kg');
 });
 
 [10,25,50,100,250,500].forEach(n=>{
@@ -189,7 +203,7 @@ document.getElementById('copy').addEventListener('click', async ()=>{
   try{ await navigator.clipboard.writeText(t); big.innerHTML = '✅ Copied!'; setTimeout(()=>update(lastEdited), 900); }
   catch(e){ big.textContent = t; }
 });
-document.getElementById('clear').addEventListener('click', ()=>{ kgEl.value=''; lbEl.value=''; update('kg'); kgEl.focus(); });
+document.getElementById('clear').addEventListener('click', ()=>{ kgEl.value=''; gEl.value=''; lbEl.value=''; update('kg'); kgEl.focus(); });
 
 /* PWA install */
 let deferredPrompt = null;
